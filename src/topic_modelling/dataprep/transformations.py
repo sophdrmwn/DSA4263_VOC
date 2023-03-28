@@ -20,7 +20,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 stemmer = PorterStemmer()
 
-# loadind raw data
+# loading raw data
 current_path = os.getcwd()
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
