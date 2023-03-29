@@ -98,12 +98,33 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
 
-# convert label to numerical value
-df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
+# 1) bow
+def bow(df, ngram_range=(1, 1)):
+    """
+    ngram_range is set to (1,1) in default to extract only individual words (unigrams)
+    can change to (2,2) for bigrams or (1,2) for both ungrams and bigrams
+    """
+    # convert label to numerical value
+    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
 
+    y = df['Sentiment_num'].tolist()
+    clean_text = df['clean_text'].tolist()
 
-# 1)TF_IDF
+    # Create an instance of the CountVectorizer class
+    vectorizer = CountVectorizer(ngram_range=ngram_range)
+
+    # Fit the vectorizer on the text data and transform it into a matrix
+    bow_matrix = vectorizer.fit_transform(clean_text)
+
+    X = bow_matrix.toarray()
+
+    return X, y
+
+# 2) TF_IDF
 def tf_idf(df):
+    # convert label to numerical value
+    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
+
     y = df['Sentiment_num'].tolist()
     clean_text = df['clean_text'].tolist()
 
@@ -117,7 +138,7 @@ def tf_idf(df):
 
     return X, y
 
-# 2)word2vec
+# 3) word2vec
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
@@ -140,6 +161,8 @@ def get_mean_vector(text, wv):
     return wv_res
 
 def word2vec(df):
+  # convert label to numerical value
+  df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
   df_copy = df.copy()
   df_copy['clean_text'] = df['clean_text'].apply(lambda x: x.split())
   df['vector'] = df_copy['clean_text'].apply(lambda text: get_mean_vector(text,wv))
