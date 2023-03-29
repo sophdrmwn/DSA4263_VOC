@@ -79,3 +79,47 @@ df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=Tru
 
 # save clean data to csv
 df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
+
+# Feature engineering
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# convert label to numerical value
+df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
+
+# 1)BoW
+def bow(df, ngram_range=(1, 1)):
+  """
+  ngram_range is set to (1,1) in default to extract only individual words (unigrams)
+  can change to (2,2) for bigrams or (1,2) for both ungrams and bigrams
+  """
+
+  y = df['Sentiment_num'].tolist()
+  clean_text = df['clean_text'].tolist()
+
+  # Create an instance of the CountVectorizer class
+  vectorizer = CountVectorizer(ngram_range=ngram_range)
+
+  # Fit the vectorizer on the text data and transform it into a matrix
+  bow_matrix = vectorizer.fit_transform(clean_text)
+
+  X = bow_matrix.toarray()
+
+  return X, y
+
+# 2)TF_IDF
+def tf_idf(df):
+  y = df['Sentiment_num'].tolist()
+  clean_text = df['clean_text'].tolist()
+
+  # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
+  #https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+  vectorizer = TfidfVectorizer()
+
+  # Fit the vectorizer on the text data and transform it into a matrix
+  matrix = vectorizer.fit_transform(clean_text)
+  X = matrix.toarray()
+
+  return X,y
+
+
