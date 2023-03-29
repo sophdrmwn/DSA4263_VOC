@@ -1,15 +1,15 @@
-from src.sentiment_analysis.dataprep.transformations import tf_idf,get_mean_vector,word2vec
+import src.transformations*
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+from sklearn.model_selection import GridSearchCV
 import xgboost
 
-# from sklearn.model_selection import train_test_split
-# X,y = tf_idf(df_clean)
-# X, y = word2vec(df_clean)
-# X_train, X_test, y_train, y_test = train_test_split(
-#         X, y, test_size=0.2, stratify=y, random_state=4263
-#     )
+from sklearn.model_selection import train_test_split
+X,y = tf_idf(df_clean)
+X, y = word2vec(df_clean)
+X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, stratify=y, random_state=4263
+    )
 
 def train_xgboost(X,y):
     # choose one of feature engineering methods: tf_idf or word2vec
@@ -36,6 +36,4 @@ def train_xgboost(X,y):
     random_search_tfidf = RandomizedSearchCV(classifier, param_distributions=params, n_iter=10, scoring="accuracy", verbose=3)
     random_search.fit(X, y)
     return random_search.best_estimator_
-
-
-
+##
