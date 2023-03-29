@@ -1,28 +1,28 @@
-import src.transformations*
+from src.transformations import *
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 import xgboost
 
-from sklearn.model_selection import train_test_split
-X,y = tf_idf(df_clean)
-X, y = word2vec(df_clean)
+# loadind raw data
+current_path = os.getcwd()
+df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
+
+# data cleaning
+df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
+df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
+
+# choose one of feature engineering methods & train-test split
+# TF_IDF or word2vec, commit one of the lines
+X,y = tf_idf(df)
+# word2vec
+#X, y = word2vec(df)
 X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=4263
     )
 
-def train_xgboost(X,y):
-    # choose one of feature engineering methods: tf_idf or word2vec
-    X_tfidf,y = tf_idf(df_clean)
-    X_word2vec,y = word2vec(df_clean)
-    # split train-test data
-    X_train_tfidf, X_test_tfidf, y_train, y_test = train_test_split(
-        X_tfidf, y, test_size=0.2, stratify=y, random_state=4263
-    )
-    X_word2vec, X_test_word2vec, y_train, y_test = train_test_split(
-        X_word2vec, y, test_size = 0.2, stratify = y, random_state=4263
-    )
-
+def train_xgboost(X_train,y_train):
     # Hyperparameters for optimization
     params = {
         "learning_rate": [0.001, 0.01, 0.1, 1],
@@ -33,7 +33,6 @@ def train_xgboost(X,y):
 
     }
     classifier = xgboost.XGBClassifier()
-    random_search_tfidf = RandomizedSearchCV(classifier, param_distributions=params, n_iter=10, scoring="accuracy", verbose=3)
-    random_search.fit(X, y)
-    return random_search.best_estimator_
-##
+    grid_search = GridSearchCV(classifier, param_grid=params, n_job=-1, scoring="accuracy", cv= 5,verbose=3)
+    grid_search.fit(X_train, y_train)
+    return grid_search.best_estimator_
