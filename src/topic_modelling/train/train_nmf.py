@@ -1,33 +1,27 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from src.transformations import skl_tfidf
 from sklearn.decomposition import NMF
 
-def train_nmf(docs, num_topics=10):
+def train_nmf(df, num_topics=20):
     """
-    Input: list of tokenized documents, number of topics
-    Output: nmf model
+    Input: df with 'stem_clean_text' column, number of topics
+    Output: list of predicted topics, nmf model
     """
-    print('Started training NMF model...')
-    # create features
-    print('Creating features...')
-    tfidf_vectorizer = TfidfVectorizer(min_df=3, 
-                                       max_df=0.85, 
-                                       max_features=5000, 
-                                       ngram_range=(1, 2), 
-                                       preprocessor=' '.join
-                                       )
-    tfidf = tfidf_vectorizer.fit_transform(docs)
+    # create tfidf
+    tfidf = skl_tfidf(df)
 
-    print('Training NMF model with tfidf...')
     # build NMF model
     nmf_model = NMF(n_components=num_topics, 
                     init='nndsvd', 
                     random_state=4263)
+    nmf_model.fit(tfidf)
+
+    # get list of predicted topics
+    pred = list(pd.DataFrame(nmf_model.transform(tfidf)).idxmax(axis=1))
     
-    print('Completed training NMF model!')
-    return nmf_model, tfidf, tfidf_vectorizer
+    return pred, nmf_model
 
 ## Testing 
 # import os
@@ -36,9 +30,6 @@ def train_nmf(docs, num_topics=10):
 # df = pd.read_csv(current_path + '/data/clean_reviews.csv', encoding='unicode_escape')
 
 # res, tfidf, tfidf_vectorizer = train_nmf(list(df['stem_clean_text'].apply(lambda x: x.split())), num_topics=10)
-
-# W = res.fit_transform(tfidf)
-# H = res.components_
 
 # n_top_words = 10
 # feature_names = tfidf_vectorizer.get_feature_names_out()
