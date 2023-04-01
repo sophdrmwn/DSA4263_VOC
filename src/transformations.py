@@ -23,7 +23,7 @@ from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
-# loadind raw data
+# # loadind raw data
 current_path = os.getcwd()
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
@@ -94,7 +94,7 @@ df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=Tru
 df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
 
 # Feature engineering
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
 
@@ -169,3 +169,15 @@ def word2vec(df):
   X = df['vector'].to_list()
   y = df['Sentiment_num'].to_list()
   return X,y
+
+def skl_tfidf(df, col_name='stem_clean_text'):
+   """
+   Input: df, name of column with text
+   """
+   texts = df[col_name]
+   tfidf_vectorizer = TfidfVectorizer(min_df=3, 
+                                      max_df=0.85, 
+                                      max_features=5000, 
+                                      ngram_range=(1, 2))
+   tfidf = tfidf_vectorizer.fit_transform(texts)
+   return tfidf
