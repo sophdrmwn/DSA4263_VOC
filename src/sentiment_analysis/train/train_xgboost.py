@@ -4,12 +4,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 import xgboost
 
-# loadind raw data
+# loading raw data
 current_path = os.getcwd()
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
 # delete after including this part in pipeline
 # data cleaning
+df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
+df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
 X = df['clean_text'].to_list()
 y = df['Sentiment_num'].to_list()
 X_train, X_test, y_train, y_test = train_test_split(
@@ -33,11 +35,13 @@ def train_xgboost(X_train, y_train):
     classifier = xgboost.XGBClassifier()
 
     # select best model
+    print("Start training xgboost model with feature engineering TF-IDF.\n")
     grid_search_tf = GridSearchCV(classifier, param_grid=params, n_job=-1, scoring="accuracy", cv= 5,verbose=3)
     grid_search_tf.fit(X_train_tf, y_train)
     tf_best_estimator = grid_search_tf.best_estimator_
     tf_best_score = grid_search_tf.best_score
 
+    print("Start training xgboost model with feature engineering word2vec.\n")
     grid_search_word = GridSearchCV(classifier, param_grid=params, n_job=-1, scoring="accuracy", cv= 5,verbose=3)
     grid_search_word.fit(X_train_word, y_train)
     word_best_estimator = grid_search_word.best_estimator_
@@ -45,9 +49,8 @@ def train_xgboost(X_train, y_train):
 
     # return best model
     if tf_best_score < word_best_score:
+        print("Successfully run the model with word2vec and return best estimator and score\n")
         return word_best_estimator, word_best_score
     else:
+        print("Successfully run the model with word2vec and return best estimator and score\n")
         return tf_best_estimator, tf_best_score
-
-
-
