@@ -1,7 +1,6 @@
 from src.transformations import *
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import numpy as np
 from sklearn.model_selection import GridSearchCV
 import xgboost
 
@@ -9,14 +8,23 @@ import xgboost
 current_path = os.getcwd()
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
+# delete after including this part in pipeline
 # data cleaning
 df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
-df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
+df['clean_text']  = df['clean_text'].apply(lambda x: x.split())
+df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
+#df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
 
-def train_xgboost(df):
+def train_xgboost(X, y):
     # compare the results of two feature engineering methods
     X_tf,y_tf = tf_idf(df)
-    X_train_tf, X_test_tf, y_train_tf, y_test_tf = train_test_split(
+    X_traX = df['clean_text'].to_list()
+y = df['Sentiment_num'].to_list(
+)
+X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, stratify=y, random_state=4263
+    )
+in_tf, X_test_tf, y_train_tf, y_test_tf = train_test_split(
         X_tf, y_tf, test_size=0.2, stratify=y_tf, random_state=4263
     )
     X_word, y_word = word2vec(df)
