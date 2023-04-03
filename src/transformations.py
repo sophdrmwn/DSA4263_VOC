@@ -99,44 +99,33 @@ import gensim.downloader as api
 from gensim.models import KeyedVectors
 
 # 1) bow
-def bow(df, ngram_range=(1, 1)):
+def bow(X, ngram_range=(1, 1)):
     """
     ngram_range is set to (1,1) in default to extract only individual words (unigrams)
     can change to (2,2) for bigrams or (1,2) for both ungrams and bigrams
     """
-    # convert label to numerical value
-    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-
-    y = df['Sentiment_num'].tolist()
-    clean_text = df['clean_text'].tolist()
-
     # Create an instance of the CountVectorizer class
     vectorizer = CountVectorizer(ngram_range=ngram_range)
 
     # Fit the vectorizer on the text data and transform it into a matrix
-    bow_matrix = vectorizer.fit_transform(clean_text)
+    bow_matrix = vectorizer.fit_transform(X)
 
     X = bow_matrix.toarray()
 
-    return X, y
+    return X
 
 # 2) TF_IDF
-def tf_idf(df):
-    # convert label to numerical value
-    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-
-    y = df['Sentiment_num'].tolist()
-    clean_text = df['clean_text'].tolist()
+def tf_idf(X):
 
     # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
     # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
     vectorizer = TfidfVectorizer()
 
     # Fit the vectorizer on the text data and transform it into a matrix
-    matrix = vectorizer.fit_transform(clean_text)
+    matrix = vectorizer.fit_transform(X)
     X = matrix.toarray()
 
-    return X, y
+    return X
 
 # 3) word2vec
 # use pre-trained word2vec model
@@ -160,15 +149,11 @@ def get_mean_vector(text, wv):
     wv_res = wv_res/ctr
     return wv_res
 
-def word2vec(df):
-  # convert label to numerical value
-  df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-  df_copy = df.copy()
-  df_copy['clean_text'] = df['clean_text'].apply(lambda x: x.split())
-  df['vector'] = df_copy['clean_text'].apply(lambda text: get_mean_vector(text,wv))
-  X = df['vector'].to_list()
-  y = df['Sentiment_num'].to_list()
-  return X,y
+def word2vec(X):
+  x_split = list(map(lambda x: x.split(),X))
+  X = list(map(lambda text: get_mean_vector(text,wv), x_split))
+
+  return X
 
 def skl_tfidf(df, col_name='stem_clean_text'):
    """
