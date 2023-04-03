@@ -3,19 +3,15 @@ from textblob import TextBlob
 
 def train_textblob(df):
     
-    df['TextBlob_subjectivity'] = df['stem_clean_text'].apply(lambda x: TextBlob(x).sentiment.subjectivity)
-    df['TextBlob_polarity'] = df['stem_clean_text'].apply(lambda x: TextBlob(x).sentiment.polarity)
-    df['TextBlob_sentiment'] = df['TextBlob_polarity'].apply(textblob_sentiment)
+    df['TextBlob_sentiment'] = df['Text'].apply(lambda x: TextBlob(x).sentiment.polarity).apply(getTextblobSentiment)
+    df['TextBlob_sentiment_num'] = df.TextBlob_sentiment.map({"positive": 1, "negative": 0})
 
     return df
-    
-def textblob_sentiment(value):
 
+def getTextblobSentiment(value):
+    
     if value < 0:
         return 'negative'
 
-    elif value > 0:
-        return 'positive'
-
     else:
-        return 'neutral'
+        return 'positive'
