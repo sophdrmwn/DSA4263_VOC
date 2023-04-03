@@ -132,28 +132,29 @@ def tf_idf(X):
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
 wv = KeyedVectors.load(current_path + 'vectors.kv')
-def get_mean_vector(text, wv):
-  """
-  numerical representation for the sentence = mean(words in the sentence)
-  """
-  vector_size = wv.vector_size
-  wv_res = np.zeros(vector_size)
-  ctr = 0
-  for w in text:
-    if w in wv:
-      ctr += 1
-      wv_res += wv[w]
-  if ctr == 0:
-    return wv_res
-  else:
-    wv_res = wv_res/ctr
-    return wv_res
+
 
 def word2vec(X):
-  x_split = list(map(lambda x: x.split(),X))
-  X = list(map(lambda text: get_mean_vector(text,wv), x_split))
+    def get_mean_vector(text, wv):
+        """
+        numerical representation for the sentence = mean(words in the sentence)
+        """
+        vector_size = wv.vector_size
+        wv_res = np.zeros(vector_size)
+        ctr = 0
+        for w in text:
+            if w in wv:
+                ctr += 1
+                wv_res += wv[w]
+        if ctr == 0:
+            return wv_res
+        else:
+            wv_res = wv_res / ctr
+            return wv_res
+    x_split = list(map(lambda x: x.split(),X))
+    X = list(map(lambda text: get_mean_vector(text,wv), x_split))
 
-  return X
+    return X
 
 def skl_tfidf(df, col_name='stem_clean_text'):
    """
