@@ -180,4 +180,4 @@ def skl_tfidf(df, col_name='stem_clean_text'):
                                       max_features=5000, 
                                       ngram_range=(1, 2))
    tfidf = tfidf_vectorizer.fit_transform(texts)
-   return tfidf
+   return tfidf, tfidf_vectorizer
