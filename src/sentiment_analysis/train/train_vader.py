@@ -1,6 +1,7 @@
 import pandas as pd 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import accuracy_score
 
 def train_vader(df):
     
@@ -8,9 +9,12 @@ def train_vader(df):
     scaler = MinMaxScaler()
     df[['Vader_polarity_scaled']] = scaler.fit_transform(df[['Vader_polarity']])
     df['Vader_sentiment'] = df['Vader_polarity_scaled'].apply(getVaderSentiment)
-    df['Vader_sentiment_num'] = df.Vader_sentiment.map({"positive": 1, "negative": 0})
+    
+    y_pred = df['Vader_sentiment']
+    y_true = df['Sentiment']
 
-    return df
+    return df[['Sentiment','Vader_sentiment']], accuracy_score(y_true, y_pred)
+
 
 def getPolarity(sentence):
     sid_obj = SentimentIntensityAnalyzer()
