@@ -24,6 +24,7 @@ stemmer = PorterStemmer()
 
 current_path = os.getcwd()
 
+
 # remove underscore
 def remove_underscore(text):
     return re.sub('_', ' ', text)
@@ -119,7 +120,7 @@ def tf_idf(X):
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-wv = KeyedVectors.load(current_path + 'vectors.kv')
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
 
 
 def word2vec(X):
