@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from src.transformations import skl_tfidf
+from transformations import skl_tfidf
 from sklearn.decomposition import NMF
 
 def train_nmf(df, num_topics=20, n_top_words=10):
