@@ -157,3 +157,45 @@ def skl_tfidf(df, col_name='stem_clean_text'):
                                       ngram_range=(1, 2))
    tfidf = tfidf_vectorizer.fit_transform(texts)
    return tfidf, tfidf_vectorizer
+
+# new version for topic modelling
+def new_bow(X, ngram_range=(1, 1)):
+    vectorizer = CountVectorizer(ngram_range=ngram_range)
+    bow_matrix = vectorizer.fit_transform(X)
+    df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names())
+    return df_bow
+
+def new_tfidf(X):
+    vectorizer = TfidfVectorizer()
+    matrix = vectorizer.fit_transform(X)
+    df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names())
+    return df_tfidf
+
+import nltk
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+
+#lemmatization
+def get_wordnet_pos(word):
+  """Map POS tag to first character lemmatize() accepts"""
+  tag = nltk.pos_tag([word])[0][1][0].lower()
+  tag_dict = {"a": wordnet.ADJ,
+              "n": wordnet.NOUN,
+              "v": wordnet.VERB,
+              "r": wordnet.ADV}
+  return tag_dict.get(tag, wordnet.NOUN)
+
+def lemmatize_text(text):
+  lemmatizer = WordNetLemmatizer()
+  tokens = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(word)) for word in text.split()]
+  result = ' '.join(tokens)
+  return result
+
+#further cleaning
+def words_remove(text):
+  ls = ['one','get','use','try','much','go','amazon','even','also','give','add','say','come','order','like']
+  tokens = [word for word in text.split() if word not in ls]
+  result = ' '.join(tokens)
+  return result
