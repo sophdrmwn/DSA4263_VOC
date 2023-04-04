@@ -24,8 +24,8 @@ from nltk.stem.porter import PorterStemmer
 stemmer = PorterStemmer()
 
 # # loadind raw data
-current_path = os.getcwd()
-df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
+# current_path = os.getcwd()
+# df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
 
 # remove underscore
@@ -86,12 +86,12 @@ def get_cleantext(text, stemming=False):
     return res
 
 
-# clean raw data
-df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
-df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
+# # clean raw data
+# df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
+# df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
 
-# save clean data to csv
-df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
+# # save clean data to csv
+# df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
 
 # Feature engineering
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
@@ -131,7 +131,7 @@ def tf_idf(X):
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-wv = KeyedVectors.load(current_path + 'vectors.kv')
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
 
 
 def word2vec(X):
