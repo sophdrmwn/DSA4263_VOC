@@ -6,8 +6,8 @@ from sklearn.decomposition import NMF
 
 def train_nmf(df, num_topics=20, n_top_words=10):
     """
-    Input: df with 'stem_clean_text' column, number of topics
-    Output: list of predicted topics, nmf model
+    Input: df with 'stem_clean_text' column, number of topics, top n number of words for each topic
+    Output: top words in each topic, list of predicted topics, nmf model
     """
     # create tfidf
     tfidf, tfidf_vectorizer = skl_tfidf(df)
