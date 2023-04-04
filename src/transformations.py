@@ -133,17 +133,6 @@ def tf_idf(X):
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
 wv = KeyedVectors.load(current_path + 'vectors.kv')
 
-<<<<<<< HEAD
-def word2vec(df):
-  # convert label to numerical value
-  df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-  df_copy = df.copy()
-  df_copy['clean_text'] = df['clean_text'].apply(lambda x: x.split())
-  df['vector'] = df_copy['clean_text'].apply(lambda text: get_mean_vector(text,wv))
-  X = df['vector'].to_list()
-  y = df['Sentiment_num'].to_list()
-  return X,y
-=======
 
 def word2vec(X):
     def get_mean_vector(text, wv):
@@ -166,7 +155,6 @@ def word2vec(X):
     X = list(map(lambda text: get_mean_vector(text,wv), x_split))
 
     return X
->>>>>>> e3f01c18d3eb4673adec5139f29f98376034a1e1
 
 def skl_tfidf(df, col_name='stem_clean_text'):
    """
@@ -178,8 +166,4 @@ def skl_tfidf(df, col_name='stem_clean_text'):
                                       max_features=5000, 
                                       ngram_range=(1, 2))
    tfidf = tfidf_vectorizer.fit_transform(texts)
-<<<<<<< HEAD
    return tfidf, tfidf_vectorizer
-=======
-   return tfidf
->>>>>>> e3f01c18d3eb4673adec5139f29f98376034a1e1
