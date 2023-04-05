@@ -162,13 +162,13 @@ def skl_tfidf(df, col_name='stem_clean_text'):
 def new_bow(X, ngram_range=(1, 1)):
     vectorizer = CountVectorizer(ngram_range=ngram_range)
     bow_matrix = vectorizer.fit_transform(X)
-    df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names())
+    df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_bow
 
 def new_tfidf(X):
     vectorizer = TfidfVectorizer()
     matrix = vectorizer.fit_transform(X)
-    df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names())
+    df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_tfidf
 
 import nltk
@@ -181,7 +181,7 @@ nltk.download('wordnet')
 def get_wordnet_pos(word):
   """Map POS tag to first character lemmatize() accepts"""
   tag = nltk.pos_tag([word])[0][1][0].lower()
-  tag_dict = {"a": wordnet.ADJ,
+  tag_dict = {"j": wordnet.ADJ,
               "n": wordnet.NOUN,
               "v": wordnet.VERB,
               "r": wordnet.ADV}
@@ -199,3 +199,9 @@ def words_remove(text):
   tokens = [word for word in text.split() if word not in ls]
   result = ' '.join(tokens)
   return result
+
+#select certain types of words like nouns, adjectives...
+def select_pos_tag(df, pt=['j','n','v','r']):
+  col = df.columns.values.tolist()
+  new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
+  return df.loc[:,new_col]
