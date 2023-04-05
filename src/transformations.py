@@ -23,9 +23,7 @@ from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
-# loadind raw data
 current_path = os.getcwd()
-df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 
 
 # remove underscore
@@ -85,90 +83,68 @@ def get_cleantext(text, stemming=False):
         res = stem_text(res)
     return res
 
-
-# clean raw data
-df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
-df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
-
-# save clean data to csv
-df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
-
 # Feature engineering
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
 
 # 1) bow
-def bow(df, ngram_range=(1, 1)):
+def bow(X, ngram_range=(1, 1)):
     """
     ngram_range is set to (1,1) in default to extract only individual words (unigrams)
     can change to (2,2) for bigrams or (1,2) for both ungrams and bigrams
     """
-    # convert label to numerical value
-    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-
-    y = df['Sentiment_num'].tolist()
-    clean_text = df['clean_text'].tolist()
-
     # Create an instance of the CountVectorizer class
     vectorizer = CountVectorizer(ngram_range=ngram_range)
 
     # Fit the vectorizer on the text data and transform it into a matrix
-    bow_matrix = vectorizer.fit_transform(clean_text)
+    bow_matrix = vectorizer.fit_transform(X)
 
     X = bow_matrix.toarray()
 
-    return X, y
+    return X
 
 # 2) TF_IDF
-def tf_idf(df):
-    # convert label to numerical value
-    df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-
-    y = df['Sentiment_num'].tolist()
-    clean_text = df['clean_text'].tolist()
+def tf_idf(X):
 
     # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
     # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
     vectorizer = TfidfVectorizer()
 
     # Fit the vectorizer on the text data and transform it into a matrix
-    matrix = vectorizer.fit_transform(clean_text)
+    matrix = vectorizer.fit_transform(X)
     X = matrix.toarray()
 
-    return X, y
+    return X
 
 # 3) word2vec
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-wv = KeyedVectors.load(current_path + 'vectors.kv')
-def get_mean_vector(text, wv):
-  """
-  numerical representation for the sentence = mean(words in the sentence)
-  """
-  vector_size = wv.vector_size
-  wv_res = np.zeros(vector_size)
-  ctr = 0
-  for w in text:
-    if w in wv:
-      ctr += 1
-      wv_res += wv[w]
-  if ctr == 0:
-    return wv_res
-  else:
-    wv_res = wv_res/ctr
-    return wv_res
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
 
-def word2vec(df):
-  # convert label to numerical value
-  df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-  df_copy = df.copy()
-  df_copy['clean_text'] = df['clean_text'].apply(lambda x: x.split())
-  df['vector'] = df_copy['clean_text'].apply(lambda text: get_mean_vector(text,wv))
-  X = df['vector'].to_list()
-  y = df['Sentiment_num'].to_list()
-  return X,y
+
+def word2vec(X):
+    def get_mean_vector(text, wv):
+        """
+        numerical representation for the sentence = mean(words in the sentence)
+        """
+        vector_size = wv.vector_size
+        wv_res = np.zeros(vector_size)
+        ctr = 0
+        for w in text:
+            if w in wv:
+                ctr += 1
+                wv_res += wv[w]
+        if ctr == 0:
+            return wv_res
+        else:
+            wv_res = wv_res / ctr
+            return wv_res
+    x_split = list(map(lambda x: x.split(),X))
+    X = list(map(lambda text: get_mean_vector(text,wv), x_split))
+
+    return X
 
 def skl_tfidf(df, col_name='stem_clean_text'):
    """
@@ -180,4 +156,46 @@ def skl_tfidf(df, col_name='stem_clean_text'):
                                       max_features=5000, 
                                       ngram_range=(1, 2))
    tfidf = tfidf_vectorizer.fit_transform(texts)
-   return tfidf
+   return tfidf, tfidf_vectorizer
+
+# new version for topic modelling
+def new_bow(X, ngram_range=(1, 1)):
+    vectorizer = CountVectorizer(ngram_range=ngram_range)
+    bow_matrix = vectorizer.fit_transform(X)
+    df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names())
+    return df_bow
+
+def new_tfidf(X):
+    vectorizer = TfidfVectorizer()
+    matrix = vectorizer.fit_transform(X)
+    df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names())
+    return df_tfidf
+
+import nltk
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+
+#lemmatization
+def get_wordnet_pos(word):
+  """Map POS tag to first character lemmatize() accepts"""
+  tag = nltk.pos_tag([word])[0][1][0].lower()
+  tag_dict = {"a": wordnet.ADJ,
+              "n": wordnet.NOUN,
+              "v": wordnet.VERB,
+              "r": wordnet.ADV}
+  return tag_dict.get(tag, wordnet.NOUN)
+
+def lemmatize_text(text):
+  lemmatizer = WordNetLemmatizer()
+  tokens = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(word)) for word in text.split()]
+  result = ' '.join(tokens)
+  return result
+
+#further cleaning
+def words_remove(text):
+  ls = ['one','get','use','try','much','go','amazon','even','also','give','add','say','come','order','like']
+  tokens = [word for word in text.split() if word not in ls]
+  result = ' '.join(tokens)
+  return result
