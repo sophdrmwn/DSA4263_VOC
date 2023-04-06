@@ -120,7 +120,7 @@ def tf_idf(X):
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-#wv = KeyedVectors.load(current_path + 'vectors.kv')
+wv = KeyedVectors.load(current_path + 'vectors.kv')
 
 
 def word2vec(X):
@@ -145,18 +145,6 @@ def word2vec(X):
 
     return X
 
-def skl_tfidf(df, col_name='stem_clean_text'):
-   """
-   Input: df, name of column with text
-   """
-   texts = df[col_name]
-   tfidf_vectorizer = TfidfVectorizer(min_df=3, 
-                                      max_df=0.85, 
-                                      max_features=5000, 
-                                      ngram_range=(1, 2))
-   tfidf = tfidf_vectorizer.fit_transform(texts)
-   return tfidf, tfidf_vectorizer
-
 # new version for topic modelling
 def new_bow(X, ngram_range=(1, 1)):
     vectorizer = CountVectorizer(ngram_range=ngram_range)
@@ -164,8 +152,11 @@ def new_bow(X, ngram_range=(1, 1)):
     df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_bow
 
-def new_tfidf(X):
-    vectorizer = TfidfVectorizer()
+def new_tfidf(X, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
+    vectorizer = TfidfVectorizer(ngram_range=ngram_range, 
+                                 max_df=max_df, 
+                                 min_df=min_df, 
+                                 max_features=max_features)
     matrix = vectorizer.fit_transform(X)
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_tfidf
