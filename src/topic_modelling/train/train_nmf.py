@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from src.transformations import skl_tfidf
+from transformations import new_tfidf
 from sklearn.decomposition import NMF
 
 def train_nmf(df, num_topics=20, n_top_words=10):
@@ -10,7 +10,8 @@ def train_nmf(df, num_topics=20, n_top_words=10):
     Output: top words in each topic, list of predicted topics, nmf model
     """
     # create tfidf
-    tfidf, tfidf_vectorizer = skl_tfidf(df)
+    tfidf_df = new_tfidf(df['stem_clean_text'].tolist(), ngram_range=(1, 2), max_df=0.85, min_df=3, max_features=5000)
+    tfidf = tfidf_df.to_numpy()
 
     # build NMF model
     nmf_model = NMF(n_components=num_topics, 
@@ -23,18 +24,10 @@ def train_nmf(df, num_topics=20, n_top_words=10):
 
     # get n_top_words of each topic
     topic_words = []
-    feature_names = tfidf_vectorizer.get_feature_names_out()
+    feature_names = tfidf_df.columns
     for topic_idx, topic in enumerate(nmf_model.components_):
        top_features_ind = topic.argsort()[: -n_top_words - 1 : -1]
        top_features = [feature_names[i] for i in top_features_ind]
        topic_words.append([topic_idx, top_features])
   
     return topic_words, pred, nmf_model
-
-## Testing 
-# import os
-
-# current_path = os.getcwd()
-# df = pd.read_csv(current_path + '/data/clean_reviews.csv', encoding='unicode_escape')
-
-# topic_words, pred, nmf_model = train_nmf(df)
