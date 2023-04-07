@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.decomposition import TruncatedSVD
 
 def lsa(df, n):
@@ -14,13 +15,9 @@ def lsa(df, n):
     print("\n Topic "+str(i)+": ",end=' ')
     for t in sorted_terms:
         print(t[0],end=' ')
-  return pd.DataFrame(topics)
+  return pd.DataFrame(topics), np.argmax(lsa_topic_matrix, axis=1)
 
-def lsa_unit_testing(topics):
-    if topics.shape==(n,10) and not(topics.isnull().values.any()):
-        return True
-    else:
-        return False
+
 
 
 
