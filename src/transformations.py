@@ -3,6 +3,10 @@ import os
 import pandas as pd
 import numpy as np
 import re
+import gensim
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+import gensim.downloader as api
+from gensim.models import KeyedVectors
 
 # nltk
 import nltk
@@ -84,10 +88,6 @@ def get_cleantext(text, stemming=False):
     return res
 
 # Feature engineering
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-import gensim.downloader as api
-from gensim.models import KeyedVectors
-
 # 1) bow
 def bow(X, ngram_range=(1, 1)):
     """
@@ -106,26 +106,27 @@ def bow(X, ngram_range=(1, 1)):
 
 # 2) TF_IDF
 def tf_idf(X):
-
-    # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
-    # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
-    vectorizer = TfidfVectorizer()
-
-    # Fit the vectorizer on the text data and transform it into a matrix
-    matrix = vectorizer.fit_transform(X)
+    X = list(map(lambda x: get_cleantext(x),X))
+    if not vectorizer:
+        # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
+        # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+        vectorizer = TfidfVectorizer()
+        # Fit the vectorizer on the text data and transform it into a matrix
+        matrix = vectorizer.fit(X)
+    
+    # Transform the input data into a matrix using the trained vectorizer
+    matrix = vectorizer.transform(X)
     X = matrix.toarray()
 
-    return X
+    return X, vectorizer
 
 # 3) word2vec
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-wv = KeyedVectors.load(current_path + 'vectors.kv')
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
 
-
-def word2vec(X):
-    def get_mean_vector(text, wv):
+def get_mean_vector(text, wv):
         """
         numerical representation for the sentence = mean(words in the sentence)
         """
@@ -141,9 +142,14 @@ def word2vec(X):
         else:
             wv_res = wv_res / ctr
             return wv_res
+        
+def word2vec(X):
+    wv = KeyedVectors.load(os.getcwd() + '/vectors.kv')
+    x_clean = list(map(lambda x: get_cleantext(x),X))
     x_split = list(map(lambda x: x.split(),X))
-    X = list(map(lambda text: get_mean_vector(text,wv), x_split))
-
+    X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
+    
+    X = np.array(X_list)
     return X
 
 # new version for topic modelling
