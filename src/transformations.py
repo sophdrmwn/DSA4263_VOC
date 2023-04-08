@@ -3,6 +3,13 @@ import os
 import pandas as pd
 import numpy as np
 import re
+<<<<<<< HEAD
+=======
+import gensim
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+import gensim.downloader as api
+from gensim.models import KeyedVectors
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 
 # nltk
 import nltk
@@ -23,9 +30,13 @@ from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
+<<<<<<< HEAD
 # loadind raw data
 current_path = os.getcwd()
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
+=======
+current_path = os.getcwd()
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 
 
 # remove underscore
@@ -85,6 +96,7 @@ def get_cleantext(text, stemming=False):
         res = stem_text(res)
     return res
 
+<<<<<<< HEAD
 
 # clean raw data
 df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
@@ -101,6 +113,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
 
+=======
+# Feature engineering
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 # 1) bow
 def bow(X, ngram_range=(1, 1)):
     """
@@ -119,6 +134,7 @@ def bow(X, ngram_range=(1, 1)):
 
 # 2) TF_IDF
 def tf_idf(X):
+<<<<<<< HEAD
 
     # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
     # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
@@ -129,16 +145,37 @@ def tf_idf(X):
     X = matrix.toarray()
 
     return X
+=======
+    X = list(map(lambda x: get_cleantext(x),X))
+    if not vectorizer:
+        # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
+        # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+        vectorizer = TfidfVectorizer()
+        # Fit the vectorizer on the text data and transform it into a matrix
+        matrix = vectorizer.fit(X)
+    
+    # Transform the input data into a matrix using the trained vectorizer
+    matrix = vectorizer.transform(X)
+    X = matrix.toarray()
+
+    return X, vectorizer
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 
 # 3) word2vec
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
+<<<<<<< HEAD
 wv = KeyedVectors.load(current_path + 'vectors.kv')
 
 
 def word2vec(X):
     def get_mean_vector(text, wv):
+=======
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
+
+def get_mean_vector(text, wv):
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
         """
         numerical representation for the sentence = mean(words in the sentence)
         """
@@ -154,8 +191,71 @@ def word2vec(X):
         else:
             wv_res = wv_res / ctr
             return wv_res
+<<<<<<< HEAD
 
     x_split = list(map(lambda x: x.split(),X))
     X = list(map(lambda text: get_mean_vector(text,wv), x_split))
 
     return X
+=======
+        
+def word2vec(X):
+    wv = KeyedVectors.load(os.getcwd() + '/vectors.kv')
+    x_clean = list(map(lambda x: get_cleantext(x),X))
+    x_split = list(map(lambda x: x.split(),X))
+    X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
+    
+    X = np.array(X_list)
+    return X
+
+# new version for topic modelling
+def new_bow(X, ngram_range=(1, 1)):
+    vectorizer = CountVectorizer(ngram_range=ngram_range)
+    bow_matrix = vectorizer.fit_transform(X)
+    df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    return df_bow
+
+def new_tfidf(X, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
+    vectorizer = TfidfVectorizer(ngram_range=ngram_range, 
+                                 max_df=max_df, 
+                                 min_df=min_df, 
+                                 max_features=max_features)
+    matrix = vectorizer.fit_transform(X)
+    df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    return df_tfidf
+
+import nltk
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+
+#lemmatization
+def get_wordnet_pos(word):
+  """Map POS tag to first character lemmatize() accepts"""
+  tag = nltk.pos_tag([word])[0][1][0].lower()
+  tag_dict = {"j": wordnet.ADJ,
+              "n": wordnet.NOUN,
+              "v": wordnet.VERB,
+              "r": wordnet.ADV}
+  return tag_dict.get(tag, wordnet.NOUN)
+
+def lemmatize_text(text):
+  lemmatizer = WordNetLemmatizer()
+  tokens = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(word)) for word in text.split()]
+  result = ' '.join(tokens)
+  return result
+
+#further cleaning
+def words_remove(text):
+  ls = ['one','get','use','try','much','go','amazon','even','also','give','add','say','come','order','like']
+  tokens = [word for word in text.split() if word not in ls]
+  result = ' '.join(tokens)
+  return result
+
+#select certain types of words like nouns, adjectives...
+def select_pos_tag(df, pt=['j','n','v','r']):
+  col = df.columns.values.tolist()
+  new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
+  return df.loc[:,new_col]
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e

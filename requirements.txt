@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 pandas
 scikit-learn
 xgboost
 nltk
 gensim
+=======
+numpy
+pandas
+sklearn
+seaborn
+nltk
+>>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
