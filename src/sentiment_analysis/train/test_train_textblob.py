@@ -25,11 +25,7 @@ def test_getSentiment():
     value = 0
     assert getTextblobSentiment(value) == 'positive'
 
-def test_train_textblob_returns_2_items(unittest_df):
-    # check train_textblob returns 2 items
-    assert len(train_textblob(unittest_df)) == 2
-
-def test_train_textblob_returns_correct_items(unittest_df):
+def test_train_textblob_returns_correct_item(unittest_df):
     # check train_textblob returns correct items
-    out1, out2 = train_textblob(unittest_df)
-    assert (len(out1) == len(unittest_df)) & (type(out2) == np.float64)
+    out = train_textblob(unittest_df)
+    assert len(out) == len(unittest_df)

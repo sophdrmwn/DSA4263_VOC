@@ -29,9 +29,6 @@ def test_getSentiment():
     value = 0.5
     assert getVaderSentiment(value) == 'positive'
 
-def test_train_vader_returns_2_items(unittest_df):
-    assert len(train_vader(unittest_df)) == 2
-
 def test_train_vader_returns_correct_items(unittest_df):
-    out1, out2 = train_vader(unittest_df)
-    assert (len(out1) == len(unittest_df)) & (type(out2) == np.float64)
+    out = train_vader(unittest_df)
+    assert len(out) == len(unittest_df)

@@ -10,10 +10,7 @@ def train_vader(df):
     df[['Vader_polarity_scaled']] = scaler.fit_transform(df[['Vader_polarity']])
     df['Vader_sentiment'] = df['Vader_polarity_scaled'].apply(getVaderSentiment)
     
-    y_pred = df['Vader_sentiment']
-    y_true = df['Sentiment']
-
-    return df[['Sentiment','Vader_sentiment']], accuracy_score(y_true, y_pred)
+    return df
 
 
 def getPolarity(sentence):
