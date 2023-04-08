@@ -1,15 +1,20 @@
 import pandas as pd
 from textblob import TextBlob
 
-def train_textblob(df):
+def train_textblob(data):
     
-    return df['Text'].apply(lambda x: TextBlob(x).sentiment.polarity).apply(getTextblobSentiment)
+    TextBlob_sentiment = []
+
+    for item in data:
+        TextBlob_sentiment.append(getTextblobSentiment(TextBlob(item).sentiment.polarity))
+
+    return TextBlob_sentiment
 
 
 def getTextblobSentiment(value):
     
     if value < 0:
-        return 'negative'
+        return 0
 
     else:
-        return 'positive'
+        return 1

@@ -1,13 +1,20 @@
 import pandas as pd 
+import numpy as np
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import MinMaxScaler
 
-def train_vader(df):
-    
-    df['Vader_polarity'] = df['Text'].apply(getPolarity)
-    scaler = MinMaxScaler()
-    df[['Vader_polarity_scaled']] = scaler.fit_transform(df[['Vader_polarity']])
-    return df['Vader_polarity_scaled'].apply(getVaderSentiment)
+def train_vader(data):
+    Vader_sentiment = []
+
+    for item in data:
+        Vader_sentiment.append(getPolarity(item))
+        
+    scaler = MinMaxScaler() 
+    Vader_sentiment = np.array(Vader_sentiment).reshape(-1,1)
+    normalized = scaler.fit_transform(Vader_sentiment)  
+    final =  [0 if x < 0.5 else 1 for x in normalized]
+
+    return final
     
 
 def getPolarity(sentence):
@@ -17,13 +24,6 @@ def getPolarity(sentence):
 
     return sentiment_dict['compound']
 
-def getVaderSentiment(value):
-    
-    if value < 0.5:
-        return 'negative'
-
-    else:
-        return 'positive'
 
 
 
