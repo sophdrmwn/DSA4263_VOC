@@ -112,7 +112,10 @@ def pred_bert(X_test):
     sentiment_analysis = pipeline(
         "sentiment-analysis", 
         model = best_model, 
-        tokenizer = "bert-base-uncased"
+        tokenizer = "bert-base-uncased", 
+        truncation = True, 
+        max_length = 512, 
+        padding = True
     )
     
     y_pred = []
@@ -121,3 +124,16 @@ def pred_bert(X_test):
         y_pred.append(int(result[0]["label"][-1:]))
     
     return y_pred
+
+def print_metrics(X_test, y_test):
+
+    y_pred = pred_bert(X_test)
+
+    # evalution metrics
+    acc = accuracy_score(y_test, y_pred)
+    pre = precision_score(y_test, y_pred)
+    recall = recall_score(y_test,y_pred)
+    f1 = f1_score(y_test, y_pred)  
+    auc = roc_auc_score(y_test, y_pred)
+    
+    return {"accuracy": acc, "recall": recall, "precision": pre, "f1": f1, "auc": auc}
