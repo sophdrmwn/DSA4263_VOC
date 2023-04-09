@@ -19,10 +19,24 @@ def data():
 def sentence():
     return 'This is a very healthy dog food. Good for their digestion. Also good for small puppies. My dog eats her required amount at every feeding.'
 
+@pytest.fixture
+def y_test():
+    return [0,1,1,0,0]
+
+@pytest.fixture
+def y_pred():
+    return [1,1,0,1,0]
+
 def test_getPolarity(sentence):
     # check that getPolarity returns a float
     assert type(getPolarity(sentence)) == float
 
 def test_train_vader_returns_correct_items(data):
+    # check that train_vader returns a list with length same as data passed into train
     out = train_vader(data)
     assert (len(out) == len(data)) & (type(out) == list)
+
+def test_eval_vader(y_test, y_pred):
+    # check that eval_vader returns a dictionary with 5 items
+    res = eval_vader(y_test, y_pred)
+    assert (type(res) == dict) & (len(res) == 5)
