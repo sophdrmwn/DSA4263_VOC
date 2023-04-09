@@ -3,13 +3,12 @@ import os
 import pandas as pd
 import numpy as np
 import re
-<<<<<<< HEAD
-=======
+
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
+
 
 # nltk
 import nltk
@@ -96,7 +95,7 @@ def get_cleantext(text, stemming=False):
         res = stem_text(res)
     return res
 
-<<<<<<< HEAD
+
 
 # clean raw data
 df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
@@ -150,7 +149,7 @@ def tf_idf(X, vectorizer = None):
 
 # 3) word2vec
 # use pre-trained word2vec model
-#wv = api.load('word2vec-google-news-300')
+wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
 def get_mean_vector(text, wv):
         """
@@ -170,8 +169,8 @@ def get_mean_vector(text, wv):
             return wv_res
 
 
-def word2vec(X):
-    wv = api.load('word2vec-google-news-300')
+def word2vec(X, wv):
+   
     x_clean = list(map(lambda x: get_cleantext(x),X))
     x_split = list(map(lambda x: x.split(),X))
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
@@ -230,4 +229,4 @@ def select_pos_tag(df, pt=['j','n','v','r']):
   col = df.columns.values.tolist()
   new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
   return df.loc[:,new_col]
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
+
