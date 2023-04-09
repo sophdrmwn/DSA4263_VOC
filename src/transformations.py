@@ -122,7 +122,7 @@ def tf_idf(X):
 
 # 3) word2vec
 # use pre-trained word2vec model
-#wv = api.load('word2vec-google-news-300')
+wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
 #wv = KeyedVectors.load(current_path + 'vectors.kv')
 
@@ -143,10 +143,10 @@ def get_mean_vector(text, wv):
             wv_res = wv_res / ctr
             return wv_res
         
-def word2vec(X):
-    wv = KeyedVectors.load(os.getcwd() + '/vectors.kv')
-    x_clean = list(map(lambda x: get_cleantext(x),X))
-    x_split = list(map(lambda x: x.split(),X))
+def word2vec(X, wv):
+
+    x_clean = list(map(lambda x: get_cleantext(x, ),X))
+    x_split = list(map(lambda x: x.split(),x_clean))
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
     
     X = np.array(X_list)
