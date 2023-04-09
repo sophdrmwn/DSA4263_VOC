@@ -113,9 +113,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
 
-=======
+
 # Feature engineering
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 # 1) bow
 def bow(X, ngram_range=(1, 1)):
     """
@@ -133,19 +132,7 @@ def bow(X, ngram_range=(1, 1)):
     return X
 
 # 2) TF_IDF
-def tf_idf(X):
-<<<<<<< HEAD
-
-    # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
-    # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
-    vectorizer = TfidfVectorizer()
-
-    # Fit the vectorizer on the text data and transform it into a matrix
-    matrix = vectorizer.fit_transform(X)
-    X = matrix.toarray()
-
-    return X
-=======
+def tf_idf(X, vectorizer = None):
     X = list(map(lambda x: get_cleantext(x),X))
     if not vectorizer:
         # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
@@ -159,23 +146,13 @@ def tf_idf(X):
     X = matrix.toarray()
 
     return X, vectorizer
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
+
 
 # 3) word2vec
 # use pre-trained word2vec model
 #wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-<<<<<<< HEAD
-wv = KeyedVectors.load(current_path + 'vectors.kv')
-
-
-def word2vec(X):
-    def get_mean_vector(text, wv):
-=======
-#wv = KeyedVectors.load(current_path + 'vectors.kv')
-
 def get_mean_vector(text, wv):
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
         """
         numerical representation for the sentence = mean(words in the sentence)
         """
@@ -191,22 +168,17 @@ def get_mean_vector(text, wv):
         else:
             wv_res = wv_res / ctr
             return wv_res
-<<<<<<< HEAD
 
-    x_split = list(map(lambda x: x.split(),X))
-    X = list(map(lambda text: get_mean_vector(text,wv), x_split))
 
-    return X
-=======
-        
 def word2vec(X):
-    wv = KeyedVectors.load(os.getcwd() + '/vectors.kv')
+    wv = api.load('word2vec-google-news-300')
     x_clean = list(map(lambda x: get_cleantext(x),X))
     x_split = list(map(lambda x: x.split(),X))
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
     
     X = np.array(X_list)
     return X
+
 
 # new version for topic modelling
 def new_bow(X, ngram_range=(1, 1)):
