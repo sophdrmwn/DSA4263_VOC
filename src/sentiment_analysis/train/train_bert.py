@@ -2,6 +2,9 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer, TrainingArguments
 import torch
 from ray import tune
+import os
+import pandas as pd
+import numpy as np
 
 class Dataset(torch.utils.data.Dataset):
 
@@ -38,7 +41,7 @@ def model_init(trial):
 
     return BertForSequenceClassification.from_pretrained('bert-base-uncased')
 
-def train_bert(X_train, X_test, y_train, y_test):
+def tune_bert(X_train, X_test, y_train, y_test):
 
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
@@ -75,39 +78,48 @@ def compute_eval_metrics(p):
 
     return {"accuracy": accuracy, "recall": recall, "precision": precision, "f1": f1, "auc": auc}
 
-def eval_bert(X_train, X_test, y_train, y_test, best_params):
+def train_bert(X_train, X_test, y_train, y_test, best_params, model_name = 'bert_tuned'):
     
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
-    
-    X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
-    X_test_tokenized = tokenizer(X_test, padding = True, truncation = True, max_length = 512)
-
-    train_dataset = Dataset(X_train_tokenized, y_train)
-    test_dataset = Dataset(X_test_tokenized, y_test)
     
     training_args = TrainingArguments(
         output_dir = 'results',
         learning_rate = best_params['learning_rate'], 
         num_train_epochs = best_params['num_train_epochs']
     )
+
+    if X_test == None and y_test == None:
+        X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
+        train_dataset = Dataset(X_train_tokenized, y_train)
+        
+        trainer = Trainer(
+            model,
+            training_args,
+            train_dataset = train_dataset
+        )
     
-    trainer = Trainer(
-        model,
-        training_args,
-        train_dataset = train_dataset,
-        eval_dataset = test_dataset, 
-        compute_metrics = compute_eval_metrics
-    )
+    else:
+        X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
+        X_test_tokenized = tokenizer(X_test, padding = True, truncation = True, max_length = 512)
+
+        train_dataset = Dataset(X_train_tokenized, y_train)
+        test_dataset = Dataset(X_test_tokenized, y_test)
+        
+        trainer = Trainer(
+            model,
+            training_args,
+            train_dataset = train_dataset,
+            eval_dataset = test_dataset, 
+            compute_metrics = compute_eval_metrics
+        )
     
     trainer.train()
-    trainer.save_model('bert-tuned')
+    trainer.save_model(model_name)
     
-    trainer.evaluate()
+def pred_bert(X_test, return_score = False, model_name = 'bert_tuned'):
     
-def pred_bert(X_test):
-    
-    best_model = BertForSequenceClassification.from_pretrained('bert-tuned')
+    best_model = BertForSequenceClassification.from_pretrained(model_name)
     
     sentiment_analysis = pipeline(
         "sentiment-analysis", 
@@ -119,13 +131,19 @@ def pred_bert(X_test):
     )
     
     y_pred = []
+    y_score = []
     for review in X_test:
         result = sentiment_analysis(review)
         y_pred.append(int(result[0]["label"][-1:]))
-    
-    return y_pred
+        y_score.append(int(result[0]["score"]))
 
-def print_metrics(X_test, y_test):
+    if return_score:
+        return y_pred, y_score
+    
+    else:
+        return y_pred
+
+def eval_bert(X_test, y_test):
 
     y_pred = pred_bert(X_test)
 
@@ -137,3 +155,16 @@ def print_metrics(X_test, y_test):
     auc = roc_auc_score(y_test, y_pred)
     
     return {"accuracy": acc, "recall": recall, "precision": pre, "f1": f1, "auc": auc}
+
+def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text'):
+
+    current_path = os.getcwd()
+    root_path = os.path.dirname(current_path)
+    df = pd.read_csv(root_path + '/data/' + filename, encoding='unicode_escape')
+
+    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = 'bert-full-train')
+
+    df['predicted_sentiment_probability'] = y_score
+    df['predicted_sentiment'] = y_pred
+
+    df.to_csv(root_path + '/data/reviews_test_prediction_Group_9.csv')
