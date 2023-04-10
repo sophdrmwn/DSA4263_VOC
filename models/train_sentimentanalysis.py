@@ -10,13 +10,13 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
         if self.labels:
-            item["labels"] = torch.tensor(self.labels[idx])
+            item['labels'] = torch.tensor(self.labels[idx])
         return item
 
     def __len__(self):
-        return len(self.encodings["input_ids"])
+        return len(self.encodings['input_ids'])
 
-def train_bert_full(X, y, model_name = 'bert_full_train'):
+def train_bert(X, y, model_name = 'bert-full-train'):
     
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
@@ -39,24 +39,40 @@ def train_bert_full(X, y, model_name = 'bert_full_train'):
     trainer.train()
     trainer.save_model(model_name)
 
-def pred_bert_line(text):
+def pred_bert(text, model_name = 'bert-full-train', return_score = False):
 
-    best_model = BertForSequenceClassification.from_pretrained('bert_full_train')
+    best_model = BertForSequenceClassification.from_pretrained(model_name)
     
     sentiment_analysis = pipeline(
-        "sentiment-analysis", 
+        'sentiment-analysis', 
         model = best_model, 
-        tokenizer = "bert-base-uncased", 
+        tokenizer = 'bert-base-uncased', 
         truncation = True, 
         max_length = 512, 
         padding = True
     )
     
-    result = sentiment_analysis(text)
-    sentiment = int(result[0]["label"][-1:])
+    if isinstance(text, list):
+        y_pred = []
+        y_score = []
+        for review in text:
+            result = sentiment_analysis(review)
+            y_pred.append(int(result[0]["label"][-1:]))
+            y_score.append(int(result[0]["score"]))
 
-    if sentiment == 1: 
-        return "Positive review"
-    
+        if return_score:
+            return y_pred, y_score
+        
+        else:
+            return y_pred
+
     else:
-        return "Negative review"
+
+        result = sentiment_analysis(text)
+        sentiment = int(result[0]['label'][-1:])
+
+        if sentiment == 1: 
+            return 'Positive review'
+        
+        else:
+            return 'Negative review'
