@@ -143,19 +143,6 @@ def pred_bert(X_test, return_score = False, model_name = 'bert_tuned'):
     else:
         return y_pred
 
-def eval_bert(X_test, y_test):
-
-    y_pred = pred_bert(X_test)
-
-    # evalution metrics
-    acc = accuracy_score(y_test, y_pred)
-    pre = precision_score(y_test, y_pred)
-    recall = recall_score(y_test,y_pred)
-    f1 = f1_score(y_test, y_pred)  
-    auc = roc_auc_score(y_test, y_pred)
-    
-    return {"accuracy": acc, "recall": recall, "precision": pre, "f1": f1, "auc": auc}
-
 def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text'):
 
     current_path = os.getcwd()
