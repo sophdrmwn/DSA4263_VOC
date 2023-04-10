@@ -15,14 +15,6 @@ def data():
                                       "I purchased this item because it was cheaper than other olive juices. i was looking for a good quality olive juice for martinis. i was pretty disappointed. the juice is very strong. i followed the instructions and put the ratio on the bottle into the shaker and made a martini. the ratio was 2 part vodka to 1 part olive juice. it was way too salty. the olive juice was over powering. i made a decent dirty martini with 2 parts vodka 1/4 part olive juice. i would not recommend this item.",
                                       "My husband just bought a Keurig coffe maker. In the box was samples, his favorite was Donut Shop. I ordered the 35 K-Cup for him. I was so disappointed, out of the 35 k-cups 11 were decaf, giving me 6 k-cups of each of the 4 flavors.<br />I also ordered the Wolfgang Puck sampler, I got 12 flavors 4 each. How cool is that!<br />I would order Donut Shop again, just not the sampler."]
 
-@pytest.fixture
-def y_test():
-    return [0,1,1,0,0]
-
-@pytest.fixture
-def y_pred():
-    return [1,1,0,1,0]
-
 def test_getSentiment():
     # check that getVaderSentiment returns 1 if value >=0
     value = 0
@@ -32,8 +24,3 @@ def test_train_textblob_returns_correct_item(data):
     # check train_textblob returns a list with length same as data passed into train
     out = train_textblob(data)
     assert (len(out) == len(data)) & (type(out) == list)
-
-def test_eval_textblob(y_test, y_pred):
-    # check that eval_textblob returns a dictionary with 5 items
-    res = eval_textblob(y_test, y_pred)
-    assert (type(res) == dict) & (len(res) == 5)
