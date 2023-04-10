@@ -44,13 +44,13 @@ def train_xgboost(X_train_tf, X_train_word, y_train, metric= "accuracy"):
         better_fe_method = "tfidf"
         return tf_best_estimator, better_fe_method
     
-def eval_xgboost(best_estimator, fe_method, X_train_tf, X_train_word, X_test_word, X_test_tf, y_test):
+def eval_xgboost(best_estimator, fe_method, X_train_tf, X_train_word, X_test_tf, X_test_word, y_train, y_test):
     if fe_method =="word":
         # Using the final xgboost tuning paramters, refit the model with the entire training set
-        best_estimator.fit(X_train_word)
+        best_estimator.fit(X_train_word, y_train)
         y_pred = best_estimator.predict(X_test_word)
     else:
-        best_estimator.fit(X_train_tf)
+        best_estimator.fit(X_train_tf, y_train)
         y_pred = best_estimator.predict(X_test_tf)
         
     # evalution metrics
