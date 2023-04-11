@@ -3,6 +3,7 @@
 from flask import Flask
 from flask import request
 from flasgger import Swagger
+from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer, TrainingArguments
 
 import os
 import pickle
@@ -12,6 +13,16 @@ import src.transformations as c
 current_path = os.getcwd()
 vectorizer = pickle.load(open(current_path+"/models/tfidfvectorizer.pickle", "rb"))
 nmf_model = pickle.load(open(current_path+"/models/nmf_model.pickle", "rb"))
+bert_model = BertForSequenceClassification.from_pretrained('bert-full-train')
+
+sentiment_analysis = pipeline(
+  'sentiment-analysis', 
+  model = bert_model, 
+  tokenizer = 'bert-base-uncased', 
+  truncation = True, 
+  max_length = 512, 
+  padding = True
+)
 
 app = Flask(__name__)
 swagger = Swagger(app)
@@ -32,7 +43,10 @@ def predict():
 
     """
     review = request.args.get('review')
-    # TODO: predict sentiment
+    
+    # predict sentiment
+    result = sentiment_analysis(review)
+    sentiment = int(result[0]['label'][-1:])
 
     # predict topic
     clean_review = c.get_cleantext(review, stemming=True)
@@ -46,8 +60,11 @@ def predict():
     topic = topic_labels[topic_num]
 
     # prepare result
-    res = "The review is a positive/ negative comment about " + topic + "."
-    return res
+    if sentiment == 1:
+      return "The is a positive review about " + topic + "."
+
+    else:
+      return "The is a negative review about " + topic + "."
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
