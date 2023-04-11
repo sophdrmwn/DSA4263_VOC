@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 
-from transformations import new_tfidf
+from src.transformations import new_tfidf
 from sklearn.decomposition import NMF
 
 current_path = os.getcwd()
