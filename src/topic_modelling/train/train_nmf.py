@@ -1,16 +1,21 @@
+import os
 import pandas as pd
 import numpy as np
+import pickle
 
-from transformations import new_tfidf
+from src.transformations import new_tfidf
 from sklearn.decomposition import NMF
 
-def train_nmf(df, num_topics=20, n_top_words=10):
+current_path = os.getcwd()
+root_path = os.path.dirname(current_path)
+
+def train_nmf(df, num_topics=20, n_top_words=10, save=False):
     """
     Input: df with 'stem_clean_text' column, number of topics, top n number of words for each topic
     Output: top words in each topic, list of predicted topics, nmf model
     """
     # create tfidf
-    tfidf_df = new_tfidf(df['stem_clean_text'].tolist(), ngram_range=(1, 2), max_df=0.85, min_df=3, max_features=5000)
+    tfidf_df = new_tfidf(df['stem_clean_text'].tolist(), save=save, ngram_range=(1, 2), max_df=0.85, min_df=3, max_features=5000)
     tfidf = tfidf_df.to_numpy()
 
     # build NMF model
@@ -18,6 +23,10 @@ def train_nmf(df, num_topics=20, n_top_words=10):
                     init='nndsvd', 
                     random_state=4263)
     nmf_model.fit(tfidf)
+
+    # save model if needed
+    if save:
+        pickle.dump(nmf_model, open(root_path+"/models/nmf_model.pickle", "wb"))
 
     # get list of predicted topics
     pred = list(pd.DataFrame(nmf_model.transform(tfidf)).idxmax(axis=1))
