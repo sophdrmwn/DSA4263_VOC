@@ -1,5 +1,5 @@
 from sklearn.metrics import accuracy_score
-from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer
+from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer, TrainingArguments
 from ray import tune
 import os
 import pandas as pd
@@ -132,7 +132,7 @@ def tune_bert(X_train, X_test, y_train, y_test, ray_hp_space = ray_hp_space, use
 
     return best_trial
 
-def pred_bert(text, model_name = 'bert-full-train', return_score = False):
+def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mps = True):
     """
     Predict the sentiment of given text(s) using a trained BERT-based sentiment analysis model.
 
@@ -151,16 +151,28 @@ def pred_bert(text, model_name = 'bert-full-train', return_score = False):
         If text is a list and return_score is False:
             A list of predicted labels.
     """
-    best_model = BertForSequenceClassification.from_pretrained(model_name)
-    
-    sentiment_analysis = pipeline(
-        'sentiment-analysis', 
-        model = best_model, 
-        tokenizer = 'bert-base-uncased', 
-        truncation = True, 
-        max_length = 512, 
-        padding = True
-    )
+
+    if use_mps:
+        best_model = BertForSequenceClassification.from_pretrained(model_path).to(torch.device("mps"))
+        sentiment_analysis = pipeline(
+            'sentiment-analysis', 
+            model = best_model, 
+            tokenizer = 'bert-base-uncased', 
+            truncation = True, 
+            max_length = 512, 
+            padding = True, 
+            device = 'mps'
+        )
+    else:
+        best_model = BertForSequenceClassification.from_pretrained(model_path)
+        sentiment_analysis = pipeline(
+            'sentiment-analysis', 
+            model = best_model, 
+            tokenizer = 'bert-base-uncased', 
+            truncation = True, 
+            max_length = 512, 
+            padding = True
+        )
     
     if isinstance(text, list):
         y_pred = []
@@ -187,7 +199,7 @@ def pred_bert(text, model_name = 'bert-full-train', return_score = False):
         else:
             return 'Negative review'
 
-def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_name = 'bert-full-train'):
+def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_path = 'bert-full-train'):
     """
     Read a CSV file containing text reviews, predict their sentiments using a trained BERT-based sentiment analysis model,
     and save the predictions to a new CSV file.
@@ -201,7 +213,7 @@ def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_name =
     root_path = os.path.dirname(current_path)
     df = pd.read_csv(root_path + '/data/' + filename, encoding='unicode_escape')
 
-    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = 'bert-full-train')
+    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = model_path)
 
     df['predicted_sentiment_probability'] = y_score
     df['predicted_sentiment'] = y_pred
