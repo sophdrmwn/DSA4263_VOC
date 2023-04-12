@@ -13,11 +13,10 @@ import src.transformations as c
 current_path = os.getcwd()
 vectorizer = pickle.load(open(current_path+"/models/tfidfvectorizer.pickle", "rb"))
 nmf_model = pickle.load(open(current_path+"/models/nmf_model.pickle", "rb"))
-bert_model = BertForSequenceClassification.from_pretrained(current_path+'/models/bert-full-train')
 
 sentiment_analysis = pipeline(
   'sentiment-analysis', 
-  model = bert_model, 
+  model = current_path + '/models/bert-full-train', 
   tokenizer = 'bert-base-uncased', 
   truncation = True, 
   max_length = 512, 
@@ -46,7 +45,7 @@ def predict():
     
     # predict sentiment
     result = sentiment_analysis(review)
-    sentiment = int(result[0]['score'])
+    sentiment = result[0]['score']
 
     # predict topic
     clean_review = c.get_cleantext(review, stemming=True)
@@ -60,7 +59,7 @@ def predict():
     topic = topic_labels[topic_num]
 
     # prepare result
-    review = 'The is a review about ' + topic + ' with a sentiment probability of ' + '{0:.0%}'.format(sentiment) + '.'
+    review = 'The is a review about ' + topic + ' with a sentiment probability of ' + str(sentiment) + '.'
 
     return review
 
