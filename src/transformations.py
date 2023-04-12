@@ -7,7 +7,7 @@ import pickle
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
-from gensim.models import KeyedVectors
+
 
 # nltk
 import nltk
