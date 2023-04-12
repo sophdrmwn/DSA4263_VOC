@@ -3,16 +3,11 @@ import os
 import pandas as pd
 import numpy as np
 import re
-<<<<<<< HEAD
-
-=======
 import pickle
->>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
 from gensim.models import KeyedVectors
-
 
 # nltk
 import nltk
@@ -31,18 +26,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 stemmer = PorterStemmer()
 
-<<<<<<< HEAD
-# loadind raw data
 current_path = os.getcwd()
-<<<<<<< HEAD
-df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
-=======
-current_path = os.getcwd()
->>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
-
-=======
 root_path = os.path.dirname(current_path)
->>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
 
 # remove underscore
 def remove_underscore(text):
@@ -101,24 +86,6 @@ def get_cleantext(text, stemming=False):
         res = stem_text(res)
     return res
 
-
-
-# clean raw data
-df['clean_text'] = df['Text'].apply(lambda x: get_cleantext(x))
-df['stem_clean_text'] = df['Text'].apply(lambda x: get_cleantext(x, stemming=True))
-
-# convert label to numerical value
-df['Sentiment_num'] = df.Sentiment.map({"positive": 1, "negative": 0})
-
-# save clean data to csv
-df.to_csv(current_path + '/data/clean_reviews.csv', index=False)
-
-# Feature engineering
-from sklearn.feature_extraction.text import TfidfVectorizer
-import gensim.downloader as api
-from gensim.models import KeyedVectors
-
-
 # Feature engineering
 # 1) bow
 def bow(X, ngram_range=(1, 1)):
@@ -152,11 +119,12 @@ def tf_idf(X, vectorizer = None):
 
     return X, vectorizer
 
-
 # 3) word2vec
 # use pre-trained word2vec model
 wv = api.load('word2vec-google-news-300')
 #wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
+
 def get_mean_vector(text, wv):
         """
         numerical representation for the sentence = mean(words in the sentence)
@@ -173,25 +141,15 @@ def get_mean_vector(text, wv):
         else:
             wv_res = wv_res / ctr
             return wv_res
-<<<<<<< HEAD
-
-
-def word2vec(X, wv):
-   
-    x_clean = list(map(lambda x: get_cleantext(x),X))
-    x_split = list(map(lambda x: x.split(),X))
-=======
         
-def word2vec(X, wv):
+def word2vec(X, wv=wv):
 
     x_clean = list(map(lambda x: get_cleantext(x, ),X))
     x_split = list(map(lambda x: x.split(),x_clean))
->>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
     
     X = np.array(X_list)
     return X
-
 
 # new version for topic modelling
 def new_bow(X, ngram_range=(1, 1)):
@@ -246,4 +204,3 @@ def select_pos_tag(df, pt=['j','n','v','r']):
   col = df.columns.values.tolist()
   new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
   return df.loc[:,new_col]
-
