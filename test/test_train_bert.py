@@ -1,8 +1,9 @@
 from src.sentiment_analysis.train.train_bert import *
+from models.train_sentimentanalysis import *
+
 import numpy as np
 from unittest.mock import patch
 from numpy.testing import assert_array_equal
-from models.train_sentimentanalysis import *
 
 def test_compute_metrics():
     # Mock prediction and labels
