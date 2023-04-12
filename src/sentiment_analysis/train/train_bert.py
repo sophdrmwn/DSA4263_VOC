@@ -5,7 +5,6 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from models.train_sentimentanalysis import *
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -132,6 +131,61 @@ def tune_bert(X_train, X_test, y_train, y_test, ray_hp_space = ray_hp_space, use
     )
 
     return best_trial
+
+def pred_bert(text, model_name = 'bert-full-train', return_score = False):
+    """
+    Predict the sentiment of given text(s) using a trained BERT-based sentiment analysis model.
+
+    Args:
+        text (str or list): A string or a list of strings.
+        model_name (str): The name of the trained model to be used for prediction.
+        return_score (bool): If True, the function returns both the predicted label and the score.
+
+    Returns:
+        If text is a string:
+            A string representing the predicted sentiment ('Positive review' or 'Negative review').
+
+        If text is a list and return_score is True:
+            A tuple of two lists, where the first list contains the predicted labels and the second list contains the scores.
+
+        If text is a list and return_score is False:
+            A list of predicted labels.
+    """
+    best_model = BertForSequenceClassification.from_pretrained(model_name)
+    
+    sentiment_analysis = pipeline(
+        'sentiment-analysis', 
+        model = best_model, 
+        tokenizer = 'bert-base-uncased', 
+        truncation = True, 
+        max_length = 512, 
+        padding = True
+    )
+    
+    if isinstance(text, list):
+        y_pred = []
+        y_score = []
+        for review in text:
+            result = sentiment_analysis(review)
+            y_pred.append(int(result[0]["label"][-1:]))
+            y_score.append(int(result[0]["score"]))
+
+        if return_score:
+            return y_pred, y_score
+        
+        else:
+            return y_pred
+
+    else:
+
+        result = sentiment_analysis(text)
+        sentiment = int(result[0]['label'][-1:])
+
+        if sentiment == 1: 
+            return 'Positive review'
+        
+        else:
+            return 'Negative review'
 
 def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_name = 'bert-full-train'):
     """
