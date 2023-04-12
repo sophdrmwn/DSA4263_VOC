@@ -13,7 +13,7 @@ import src.transformations as c
 current_path = os.getcwd()
 vectorizer = pickle.load(open(current_path+"/models/tfidfvectorizer.pickle", "rb"))
 nmf_model = pickle.load(open(current_path+"/models/nmf_model.pickle", "rb"))
-bert_model = BertForSequenceClassification.from_pretrained('bert-full-train')
+bert_model = BertForSequenceClassification.from_pretrained(current_path+'/models/bert-full-train')
 
 sentiment_analysis = pipeline(
   'sentiment-analysis', 
