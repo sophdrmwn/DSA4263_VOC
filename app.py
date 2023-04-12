@@ -46,9 +46,15 @@ def predict():
     # predict sentiment
     result = sentiment_analysis(review)
     if int(result[0]["label"][-1:]) == 1:
-      sentiment = float(result[0]["score"])
+      sentiment_prob = float(result[0]["score"])
     else:
-      sentiment = 1 - float(result[0]["score"])
+      sentiment_prob = 1 - float(result[0]["score"])
+    if sentiment_prob>0.5:
+       sentiment = "positive"
+    else:
+       sentiment = "negative"
+       
+
 
     # predict topic
     clean_review = c.get_cleantext(review, stemming=True)
@@ -62,9 +68,9 @@ def predict():
     topic = topic_labels[topic_num]
 
     # prepare result
-    review = 'The is a review about ' + topic + ' with a sentiment probability of ' + str(sentiment) + '.'
+    review = 'This is a {0:s} review about {1:s} with a sentiment probability of {2:.5f}.'
 
-    return review
+    return review.format(sentiment, topic, sentiment_prob)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
