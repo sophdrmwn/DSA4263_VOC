@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, '../src')
 from sentiment_analysis.train.train_bert import Dataset
 
-def train_bert(X, y, model_name = 'bert-full-train', use_mps = True):
+def train_bert(X, y, model_path = 'bert-full-train', use_mps = True):
     """
     Train a BERT-based sentiment analysis model on a given dataset.
 
@@ -48,4 +48,4 @@ def train_bert(X, y, model_name = 'bert-full-train', use_mps = True):
     )
     
     trainer.train()
-    trainer.save_model(model_name)
+    trainer.save_model(model_path)
