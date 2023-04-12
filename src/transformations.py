@@ -87,23 +87,7 @@ def get_cleantext(text, stemming=False):
     return res
 
 # Feature engineering
-# 1) bow
-def bow(X, ngram_range=(1, 1)):
-    """
-    ngram_range is set to (1,1) in default to extract only individual words (unigrams)
-    can change to (2,2) for bigrams or (1,2) for both ungrams and bigrams
-    """
-    # Create an instance of the CountVectorizer class
-    vectorizer = CountVectorizer(ngram_range=ngram_range)
-
-    # Fit the vectorizer on the text data and transform it into a matrix
-    bow_matrix = vectorizer.fit_transform(X)
-
-    X = bow_matrix.toarray()
-
-    return X
-
-# 2) TF_IDF
+# 1) TF_IDF
 def tf_idf(X, vectorizer = None):
     X = list(map(lambda x: get_cleantext(x),X))
     if not vectorizer:
@@ -118,12 +102,7 @@ def tf_idf(X, vectorizer = None):
 
     return X, vectorizer
 
-# 3) word2vec
-# use pre-trained word2vec model
-wv = api.load('word2vec-google-news-300')
-#wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
-#wv = KeyedVectors.load(current_path + 'vectors.kv')
-
+# 2) word2vec
 def get_mean_vector(text, wv):
         """
         numerical representation for the sentence = mean(words in the sentence)
@@ -141,8 +120,10 @@ def get_mean_vector(text, wv):
             wv_res = wv_res / ctr
             return wv_res
         
-def word2vec(X, wv=wv):
-
+def word2vec(X, wv_name = 'word2vec-google-news-300'):
+    # use pre-trained word2vec model
+    wv = api.load(wv_name)
+    
     x_clean = list(map(lambda x: get_cleantext(x, ),X))
     x_split = list(map(lambda x: x.split(),x_clean))
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
