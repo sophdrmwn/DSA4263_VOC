@@ -104,11 +104,10 @@ def bow(X, ngram_range=(1, 1)):
     return X
 
 # 2) TF_IDF
-def tf_idf(X):
+def tf_idf(X, vectorizer = None):
     X = list(map(lambda x: get_cleantext(x),X))
     if not vectorizer:
         # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
-        # https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
         vectorizer = TfidfVectorizer()
         # Fit the vectorizer on the text data and transform it into a matrix
         matrix = vectorizer.fit(X)
@@ -142,7 +141,7 @@ def get_mean_vector(text, wv):
             wv_res = wv_res / ctr
             return wv_res
         
-def word2vec(X, wv):
+def word2vec(X, wv=wv):
 
     x_clean = list(map(lambda x: get_cleantext(x, ),X))
     x_split = list(map(lambda x: x.split(),x_clean))
