@@ -6,8 +6,19 @@ from gensim import corpora, models
 
 def train_lda(df, num_topics=20, n_top_words=10, text_col='stem_clean_text'):
     """
-    Input: df, number of topics, top n number of words for each topic, text column name
-    Output: top words in each topic, list of predicted topics, lda model
+    Trains a LDA model with the data and parameters provided.
+
+    Args:
+        df (dataframe): Dataframe with a column of text reviews
+        num_topics (int, optional): Expected total number of topics mentioned in the reviews
+        n_top_words (int, optional): Number of top words of each topic to return
+        text_col (str, optional): Name of column containing the reviews; default set as 'stem_clean_text'
+    
+    Returns:
+        A tuple containing:
+            - topic_words (list): A list of tuples, each containing the topic number and its corresponding n top words as strings.
+            - pred (list): A list of integers, each representing the predicted topic number for the corresponding data point.
+            - lda_model (gensim.models.ldamodel.LdaModel): The trained LDA model.
     """
     # create features
     docs = list(df[text_col].apply(lambda x: x.split()))
