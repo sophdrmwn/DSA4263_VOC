@@ -45,7 +45,10 @@ def predict():
     
     # predict sentiment
     result = sentiment_analysis(review)
-    sentiment = result[0]['score']
+    if int(result[0]["label"][-1:]) == 1:
+      sentiment = float(result[0]["score"])
+    else:
+      sentiment = 1 - float(result[0]["score"])
 
     # predict topic
     clean_review = c.get_cleantext(review, stemming=True)
