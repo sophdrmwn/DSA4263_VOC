@@ -8,7 +8,7 @@ def get_metrics(y_pred, y_test, results_dict, model_name, y_pred_score = None):
     f1 = f1_score(y_test, y_pred)  
     auc = roc_auc_score(y_test, y_pred)
 
-    if y_pred_score != None:
+    if y_pred_score is not None:
         auc = roc_auc_score(y_test, y_pred_score)
 
     results_dict[model_name] = {"accuracy": acc, 
