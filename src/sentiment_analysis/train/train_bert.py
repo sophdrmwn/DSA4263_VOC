@@ -1,10 +1,28 @@
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, roc_auc_score
-from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer, TrainingArguments
-import torch
+from sklearn.metrics import accuracy_score
+from transformers import pipeline, BertForSequenceClassification, BertTokenizer, Trainer
 from ray import tune
+import os
+import pandas as pd
+import numpy as np
+import torch
 
 class Dataset(torch.utils.data.Dataset):
+    """
+    Dataset class for loading text data for BERT model.
 
+    Parameters:
+        encodings (dict): Dictionary containing input_ids and attention_mask
+                          for the encoded text data.
+        labels (list): List of labels corresponding to the text data. Default: None
+
+    Methods:
+        __getitem__(idx):
+            Returns a dictionary containing 'input_ids', 'attention_mask',
+            and 'labels' (if available) at the specified index.
+
+        __len__():
+            Returns the length of the input_ids tensor.
+    """
     def __init__(self, encodings, labels=None):
         self.encodings = encodings
         self.labels = labels
@@ -12,34 +30,69 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
         if self.labels:
-            item["labels"] = torch.tensor(self.labels[idx])
+            item['labels'] = torch.tensor(self.labels[idx])
         return item
 
     def __len__(self):
-        return len(self.encodings["input_ids"])
+        return len(self.encodings['input_ids'])
 
 def compute_metrics(p):
+    """
+    Computes and returns the accuracy score for predictions.
 
+    Args:
+        p (tuple): Tuple containing predicted probabilities and labels.
+
+    Returns:
+        dict: Dictionary containing the accuracy score.
+    """
     pred, labels = p
     pred = np.argmax(pred, axis=1)
 
     accuracy = accuracy_score(y_true=labels, y_pred=pred)
 
-    return {"accuracy": accuracy}
+    return {'accuracy': accuracy}
 
 def ray_hp_space(trial):
+    """
+    Returns a dictionary containing chosen hyperparameters for hyperparameter search.
 
+    Args:
+        trial: Object representing a single trial of a hyperparameter search.
+
+    Returns:
+        dict: Dictionary containing chosen hyperparameters to be tuned for a BERT model.
+    """
     return {
         'learning_rate': tune.grid_search([3e-5, 5e-5]),
         'num_train_epochs': tune.grid_search([2, 4])
     }
 
 def model_init(trial):
+    """
+    Initializes and returns a BERT model.
 
+    Args:
+        trial: Object representing a single trial of a hyperparameter search.
+
+    Returns:
+        BertForSequenceClassification: BERT model for sequence classification.
+    """
     return BertForSequenceClassification.from_pretrained('bert-base-uncased')
 
-def train_bert(X_train, X_test, y_train, y_test):
+def tune_bert(X_train, X_test, y_train, y_test, ray_hp_space = ray_hp_space, use_mps = True):
+    """
+    Performs hyperparameter tuning for a BERT model.
 
+    Args:
+        X_train (list): List of text data for training.
+        X_test (list): List of text data for testing.
+        y_train (list): List of labels for training data.
+        y_test (list): List of labels for testing data.
+
+    Returns:
+        Object: Object representing the best trial from hyperparameter search.
+    """
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
     X_test_tokenized = tokenizer(X_test, padding = True, truncation = True, max_length = 512)
@@ -47,12 +100,28 @@ def train_bert(X_train, X_test, y_train, y_test):
     train_dataset = Dataset(X_train_tokenized, y_train)
     test_dataset = Dataset(X_test_tokenized, y_test)
 
-    trainer = Trainer(
-        train_dataset = train_dataset,
-        eval_dataset = test_dataset,
-        compute_metrics = compute_metrics,
-        model_init = model_init
-    )
+    if use_mps:
+
+        training_args = TrainingArguments(
+                output_dir = 'results',
+                use_mps_device = True
+            )
+        trainer = Trainer(
+            args = training_args,
+            train_dataset = train_dataset,
+            eval_dataset = test_dataset,
+            compute_metrics = compute_metrics,
+            model_init = model_init
+        )
+    
+    else:
+
+        trainer = Trainer(
+            train_dataset = train_dataset,
+            eval_dataset = test_dataset,
+            compute_metrics = compute_metrics,
+            model_init = model_init
+        )
 
     best_trial = trainer.hyperparameter_search(
         direction = "maximize",
@@ -63,61 +132,78 @@ def train_bert(X_train, X_test, y_train, y_test):
 
     return best_trial
 
-def compute_eval_metrics(p):
-    pred, labels = p
-    pred = np.argmax(pred, axis=1)
+def pred_bert(text, model_name = 'bert-full-train', return_score = False):
+    """
+    Predict the sentiment of given text(s) using a trained BERT-based sentiment analysis model.
 
-    accuracy = accuracy_score(y_true = labels, y_pred = pred)
-    recall = recall_score(y_true = labels, y_pred = pred)
-    precision = precision_score(y_true = labels, y_pred = pred)
-    f1 = f1_score(y_true = labels, y_pred = pred)
-    auc = roc_auc_score(y_true = labels, y_pred = pred)
+    Args:
+        text (str or list): A string or a list of strings.
+        model_name (str): The name of the trained model to be used for prediction.
+        return_score (bool): If True, the function returns both the predicted label and the score.
 
-    return {"accuracy": accuracy, "recall": recall, "precision": precision, "f1": f1, "auc": auc}
+    Returns:
+        If text is a string:
+            A string representing the predicted sentiment ('Positive review' or 'Negative review').
 
-def eval_bert(X_train, X_test, y_train, y_test, best_params):
-    
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
-    
-    X_train_tokenized = tokenizer(X_train, padding = True, truncation = True, max_length = 512)
-    X_test_tokenized = tokenizer(X_test, padding = True, truncation = True, max_length = 512)
+        If text is a list and return_score is True:
+            A tuple of two lists, where the first list contains the predicted labels and the second list contains the scores.
 
-    train_dataset = Dataset(X_train_tokenized, y_train)
-    test_dataset = Dataset(X_test_tokenized, y_test)
-    
-    training_args = TrainingArguments(
-        output_dir = 'results',
-        learning_rate = best_params['learning_rate'], 
-        num_train_epochs = best_params['num_train_epochs']
-    )
-    
-    trainer = Trainer(
-        model,
-        training_args,
-        train_dataset = train_dataset,
-        eval_dataset = test_dataset, 
-        compute_metrics = compute_eval_metrics
-    )
-    
-    trainer.train()
-    trainer.save_model('bert-tuned')
-    
-    trainer.evaluate()
-    
-def pred_bert(X_test):
-    
-    best_model = BertForSequenceClassification.from_pretrained('bert-tuned')
+        If text is a list and return_score is False:
+            A list of predicted labels.
+    """
+    best_model = BertForSequenceClassification.from_pretrained(model_name)
     
     sentiment_analysis = pipeline(
-        "sentiment-analysis", 
+        'sentiment-analysis', 
         model = best_model, 
-        tokenizer = "bert-base-uncased"
+        tokenizer = 'bert-base-uncased', 
+        truncation = True, 
+        max_length = 512, 
+        padding = True
     )
     
-    y_pred = []
-    for review in X_test:
-        result = sentiment_analysis(review)
-        y_pred.append(int(result[0]["label"][-1:]))
-    
-    return y_pred
+    if isinstance(text, list):
+        y_pred = []
+        y_score = []
+        for review in text:
+            result = sentiment_analysis(review)
+            y_pred.append(int(result[0]["label"][-1:]))
+            y_score.append(int(result[0]["score"]))
+
+        if return_score:
+            return y_pred, y_score
+        
+        else:
+            return y_pred
+
+    else:
+
+        result = sentiment_analysis(text)
+        sentiment = int(result[0]['label'][-1:])
+
+        if sentiment == 1: 
+            return 'Positive review'
+        
+        else:
+            return 'Negative review'
+
+def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_name = 'bert-full-train'):
+    """
+    Read a CSV file containing text reviews, predict their sentiments using a trained BERT-based sentiment analysis model,
+    and save the predictions to a new CSV file.
+
+    Args:
+        filename (str): The name of the CSV file to be read.
+        col_name (str): The name of the column in the CSV file containing the texts to be predicted.
+        model_name (str): The name of the trained model to be used for prediction.
+    """
+    current_path = os.getcwd()
+    root_path = os.path.dirname(current_path)
+    df = pd.read_csv(root_path + '/data/' + filename, encoding='unicode_escape')
+
+    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = 'bert-full-train')
+
+    df['predicted_sentiment_probability'] = y_score
+    df['predicted_sentiment'] = y_pred
+
+    df.to_csv(root_path + '/data/reviews_test_prediction_Group_9.csv')

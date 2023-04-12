@@ -3,7 +3,11 @@ import os
 import pandas as pd
 import numpy as np
 import re
+<<<<<<< HEAD
 
+=======
+import pickle
+>>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
@@ -12,7 +16,6 @@ from gensim.models import KeyedVectors
 
 # nltk
 import nltk
-
 nltk.download('punkt')
 
 # stopwords
@@ -26,17 +29,20 @@ from nltk.tokenize import word_tokenize
 
 # normalizing
 from nltk.stem.porter import PorterStemmer
-
 stemmer = PorterStemmer()
 
 <<<<<<< HEAD
 # loadind raw data
 current_path = os.getcwd()
+<<<<<<< HEAD
 df = pd.read_csv(current_path + '/data/reviews.csv', encoding='unicode_escape')
 =======
 current_path = os.getcwd()
 >>>>>>> a2e0a8813c6a296cadc5195488020f43cc58924e
 
+=======
+root_path = os.path.dirname(current_path)
+>>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
 
 # remove underscore
 def remove_underscore(text):
@@ -167,12 +173,20 @@ def get_mean_vector(text, wv):
         else:
             wv_res = wv_res / ctr
             return wv_res
+<<<<<<< HEAD
 
 
 def word2vec(X, wv):
    
     x_clean = list(map(lambda x: get_cleantext(x),X))
     x_split = list(map(lambda x: x.split(),X))
+=======
+        
+def word2vec(X, wv):
+
+    x_clean = list(map(lambda x: get_cleantext(x, ),X))
+    x_split = list(map(lambda x: x.split(),x_clean))
+>>>>>>> 19f2a0b4762aa774e93fad1cde5f44e0969a7d60
     X_list = list(map(lambda text: get_mean_vector(text,wv), x_split))
     
     X = np.array(X_list)
@@ -186,13 +200,16 @@ def new_bow(X, ngram_range=(1, 1)):
     df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_bow
 
-def new_tfidf(X, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
+def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
     vectorizer = TfidfVectorizer(ngram_range=ngram_range, 
                                  max_df=max_df, 
                                  min_df=min_df, 
                                  max_features=max_features)
     matrix = vectorizer.fit_transform(X)
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    # save tfidf vectorizer if needed
+    if save:
+        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pickle", "wb"))
     return df_tfidf
 
 import nltk
