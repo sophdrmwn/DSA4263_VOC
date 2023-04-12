@@ -40,13 +40,15 @@ def train_xgboost(X_train_tf, X_train_word, X_test_tf, X_test_word, y_train, y_t
         # Using the final xgboost tuning paramters, refit the model with the entire training set
         word_best_estimator.fit(X_train_word, y_train)
         y_pred = word_best_estimator.predict(X_test_word)
-        return word_best_estimator, y_pred
+        y_pred_proba = word_best_estimator.predict_proba(X_test_tf)[:, 1]
+        return word_best_estimator, y_pred, y_pred_proba
     else:
         print("Training on X_train_tf gives the best estimator and score: " + str(tf_best_score))
         # Using the final xgboost tuning paramters, refit the model with the entire training set
         tf_best_estimator.fit(X_train_tf, y_train)
         y_pred = tf_best_estimator.predict(X_test_tf)
-        return tf_best_estimator, y_pred
+        y_pred_proba = tf_best_estimator.predict_proba(X_test_tf)[:, 1]
+        return tf_best_estimator, y_pred, y_pred_proba
     
 
                        
