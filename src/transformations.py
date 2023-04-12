@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import re
+import pickle
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
@@ -10,7 +11,6 @@ from gensim.models import KeyedVectors
 
 # nltk
 import nltk
-
 nltk.download('punkt')
 
 # stopwords
@@ -27,7 +27,7 @@ from nltk.stem.porter import PorterStemmer
 stemmer = PorterStemmer()
 
 current_path = os.getcwd()
-
+root_path = os.path.dirname(current_path)
 
 # remove underscore
 def remove_underscore(text):
@@ -158,13 +158,16 @@ def new_bow(X, ngram_range=(1, 1)):
     df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_bow
 
-def new_tfidf(X, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
+def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
     vectorizer = TfidfVectorizer(ngram_range=ngram_range, 
                                  max_df=max_df, 
                                  min_df=min_df, 
                                  max_features=max_features)
     matrix = vectorizer.fit_transform(X)
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    # save tfidf vectorizer if needed
+    if save:
+        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pickle", "wb"))
     return df_tfidf
 
 import nltk
