@@ -4,7 +4,7 @@ import numpy as np
 
 sys.path.insert(0, '../src')
 
-from train.train_vader import *
+from sentiment_analysis.train.train_vader import *
 import pytest
 
 @pytest.fixture

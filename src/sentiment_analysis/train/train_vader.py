@@ -1,18 +1,20 @@
 import pandas as pd 
 import numpy as np
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from sklearn.preprocessing import MinMaxScaler
+import scipy
+from scipy import stats
 
 def train_vader(data):
     Vader_sentiment = []
 
     for item in data:
-        Vader_sentiment.append(getPolarity(item))
-        
-    scaler = MinMaxScaler() 
-    Vader_sentiment = np.array(Vader_sentiment).reshape(-1,1)
-    normalized = scaler.fit_transform(Vader_sentiment)  
-    final =  [0 if x < 0.5 else 1 for x in normalized]
+        offset = (getPolarity(item) + 1)/2
+        binned = np.digitize(20 * offset, np.array([1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])) + 1
+        simulated_probs = scipy.stats.norm.pdf(np.array([1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]), binned, scale=0.5)
+        Vader_sentiment.append(simulated_probs.argmax())
+
+    final =  [0 if x <= 10  else 1 for x in Vader_sentiment]
+
 
     return final
     
