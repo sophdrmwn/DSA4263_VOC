@@ -153,10 +153,9 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
     """
 
     if use_mps:
-        best_model = BertForSequenceClassification.from_pretrained(model_path).to(torch.device("mps"))
         sentiment_analysis = pipeline(
             'sentiment-analysis', 
-            model = best_model, 
+            model = model_path, 
             tokenizer = 'bert-base-uncased', 
             truncation = True, 
             max_length = 512, 
@@ -164,10 +163,9 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
             device = 'mps'
         )
     else:
-        best_model = BertForSequenceClassification.from_pretrained(model_path)
         sentiment_analysis = pipeline(
             'sentiment-analysis', 
-            model = best_model, 
+            model = model_path, 
             tokenizer = 'bert-base-uncased', 
             truncation = True, 
             max_length = 512, 
@@ -180,7 +178,10 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
         for review in text:
             result = sentiment_analysis(review)
             y_pred.append(int(result[0]["label"][-1:]))
-            y_score.append(int(result[0]["score"]))
+            if int(result[0]["label"][-1:]) == 1:
+                y_score.append(float(result[0]["score"]))
+            else:
+                y_score.append(1 - float(result[0]["score"]))
 
         if return_score:
             return y_pred, y_score
@@ -189,7 +190,6 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
             return y_pred
 
     else:
-
         result = sentiment_analysis(text)
         sentiment = int(result[0]['label'][-1:])
 
