@@ -5,6 +5,15 @@ import scipy
 from scipy import stats
 
 def train_vader(data):
+    """
+    Predict the sentiment of given text(s) using VADER.
+
+    Args:
+        data: a list of texts
+
+    Returns:
+        A list of 0s and 1s, where 0 represents negative sentiment and 1 represents positive sentiment. 
+    """
     Vader_sentiment = []
 
     for item in data:
@@ -24,6 +33,16 @@ def train_vader(data):
     
 
 def getPolarity(sentence):
+    """
+    Gets the polarity of a text using the VADER model.
+
+    Args:
+        sentence: a text in string format
+
+    Returns:
+        A float representing the polarity score of the sentence.
+    """
+
     sid_obj = SentimentIntensityAnalyzer()
 
     sentiment_dict = sid_obj.polarity_scores(sentence)

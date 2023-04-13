@@ -12,11 +12,13 @@ Evaluation was done based on the models' performance on the dataset and the best
 The repository is split into 4 folders (models, notebooks, src and test)
 
   1. models folder
-      - contains all the trained model files
+      - contains the best models after tuning
+      - contains the training scripts of the best sentiment anaylsis model and best topic modelling model
     
   2. notebooks folder
       - runs the training of the models, evaluation and selection of the best model as well as the prediction on the unseen test data (for sentiment analysis). 
       - sentiment analysis and topic modelling tasks are split into their own notebooks. 
+      - the codes for training and tuning of the models are commented out as these take a lot of time. The output of the training and tuning were kept. 
   
   3. src folder
       1. sentiment_analysis folder

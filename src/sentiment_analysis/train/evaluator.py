@@ -10,11 +10,32 @@ def get_metrics(y_pred, y_test, results_dict, model_name, y_pred_score = None):
 
     if y_pred_score is not None:
         auc = roc_auc_score(y_test, y_pred_score)
+    
+    metrics = {"accuracy": acc, 
+               "recall": recall, 
+               "precision": pre,
+               "f1": f1, 
+               "auc": auc}
+    print(metrics)
 
-    results_dict[model_name] = {"accuracy": acc, 
-                                "recall": recall, 
-                                "precision": pre, 
-                                "f1": f1, 
-                                "auc": auc}
+    for metric in results_dict.keys():
+        results_dict[metric][model_name] = metrics[metric]
     
     return results_dict
+
+def model_comparison(results_dict):
+
+    rank_dict = {}
+    for metric in results_dict.keys():
+        sorted_dict = sorted(results_dict[metric].items(), key=lambda x:x[1], reverse = True)
+        for i in range(len(sorted_dict)):
+            model_name = sorted_dict[i][0]
+            if model_name not in rank_dict.keys():
+                rank_dict[model_name] = i
+            else:
+                rank_dict[model_name] += i
+
+    best_model = sorted(rank_dict.items(), key=lambda x:x[1])[0][0]
+
+    print(best_model + ' performed the best among all the models.')
+    print(rank_dict)

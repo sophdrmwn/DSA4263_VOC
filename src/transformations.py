@@ -7,7 +7,7 @@ import pickle
 import gensim
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import gensim.downloader as api
-from gensim.models import KeyedVectors
+
 
 # nltk
 import nltk
@@ -103,6 +103,11 @@ def tf_idf(X, vectorizer = None):
     return X, vectorizer
 
 # 2) word2vec
+# use pre-trained word2vec model
+# wv = api.load('word2vec-google-news-300')
+#wv.save('/content/drive/MyDrive/Dsa4263/vectors.kv')
+#wv = KeyedVectors.load(current_path + 'vectors.kv')
+
 def get_mean_vector(text, wv):
         """
         numerical representation for the sentence = mean(words in the sentence)
@@ -131,13 +136,14 @@ def word2vec(X, wv_name = 'word2vec-google-news-300'):
     X = np.array(X_list)
     return X
 
-# new version for topic modelling
+# 3) Bag of Words
 def new_bow(X, ngram_range=(1, 1)):
     vectorizer = CountVectorizer(ngram_range=ngram_range)
     bow_matrix = vectorizer.fit_transform(X)
     df_bow = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
     return df_bow
 
+# 4) TF_IDF with save option and without cleaning
 def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_features=None):
     vectorizer = TfidfVectorizer(ngram_range=ngram_range, 
                                  max_df=max_df, 
@@ -147,7 +153,7 @@ def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_featu
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
     # save tfidf vectorizer if needed
     if save:
-        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pickle", "wb"))
+        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pkl", "wb"))
     return df_tfidf
 
 import nltk
