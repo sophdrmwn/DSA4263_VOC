@@ -153,7 +153,7 @@ def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_featu
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
     # save tfidf vectorizer if needed
     if save:
-        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pickle", "wb"))
+        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pkl", "wb"))
     return df_tfidf
 
 import nltk

@@ -38,7 +38,7 @@ def train_nmf(df, num_topics=20, n_top_words=10, save=False, text_col='stem_clea
 
     # save model if needed
     if save:
-        pickle.dump(nmf_model, open(root_path+"/models/nmf_model.pickle", "wb"))
+        pickle.dump(nmf_model, open(root_path+"/models/nmf_model.pkl", "wb"))
 
     # get list of predicted topics
     pred = list(pd.DataFrame(nmf_model.transform(tfidf)).idxmax(axis=1))
