@@ -8,21 +8,29 @@ import src.topic_modelling.train.train_nmf as tm
 current_path = os.getcwd()
 root_path = os.path.dirname(current_path)
 
-def train_save_topic_model(df, num_topics=20, n_top_words=10):
+def train_save_topic_model(df, num_topics=20, text_col='stem_clean_text'):
     """
-    Input: df with 'stem_clean_text' column, number of topics, top n number of words for each topic
-    This function trains and saves a NMF model (and tfidf vectorizer) with the data and parameters provided.
-    Pickles are saved under the models folder.
+    Trains and saves a NMF model (and tfidf vectorizer) with the data and parameters provided. Pickles are saved under the models folder.
+
+    Args:
+        df (dataframe): Dataframe with a column of text reviews
+        num_topics (int, optional): Expected total number of topics mentioned in the reviews
+        text_col (str, optional): Name of column containing the reviews; default set as 'stem_clean_text'
     """
     nmf_topic_words, nmf_pred, nmf_model = tm.train_nmf(df, 
-                                                        num_topics=num_topics, 
-                                                        n_top_words=n_top_words, 
-                                                        save=True)
+                                                        num_topics=num_topics,
+                                                        save=True, 
+                                                        text_col=text_col)
     
 def predict_topic(review):
     """
-    Input: 1 review (String)
-    Output: predicted topic for that review using the saved model
+    Takes in a review and uses the saved NMF model to predict its topic.
+
+    Args:
+        review (str): The review to be processed.
+    
+    Returns:
+        topic (str): The predicted topic of the review.
     """
     vectorizer = pickle.load(open(root_path+"/models/tfidfvectorizer.pickle", "rb"))
     nmf_model = pickle.load(open(root_path+"/models/nmf_model.pickle", "rb"))
@@ -38,4 +46,6 @@ def predict_topic(review):
                     15: 'Recommendations', 16: 'Trying', 17: 'Alternative Sources', 18: 'Cat/ Baby Food', 
                     19: 'Cooking Ingredients'}
     
-    return topic_labels[topic_num]
+    topic = topic_labels[topic_num]
+    
+    return topic
