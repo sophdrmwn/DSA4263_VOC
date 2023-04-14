@@ -80,7 +80,7 @@ def model_init(trial):
     """
     return BertForSequenceClassification.from_pretrained('bert-base-uncased')
 
-def tune_bert(X_train, X_test, y_train, y_test, ray_hp_space = ray_hp_space, use_mps = True):
+def tune_bert(X_train, X_test, y_train, y_test, use_mps = True):
     """
     Performs hyperparameter tuning for a BERT model.
 
@@ -89,6 +89,7 @@ def tune_bert(X_train, X_test, y_train, y_test, ray_hp_space = ray_hp_space, use
         X_test (list): List of text data for testing.
         y_train (list): List of labels for training data.
         y_test (list): List of labels for testing data.
+        use_mps (bool): Set as True if running on Mac Silicon machines.
 
     Returns:
         Object: Object representing the best trial from hyperparameter search.
@@ -140,6 +141,7 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
         text (str or list): A string or a list of strings.
         model_name (str): The name of the trained model to be used for prediction.
         return_score (bool): If True, the function returns both the predicted label and the score.
+        use_mps (bool): If True, the model will use the MPS device for faster training.
 
     Returns:
         If text is a string:
@@ -199,7 +201,7 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
         else:
             return 'Negative review'
 
-def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_path = 'bert-full-train'):
+def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_path = 'bert-full-train', use_mps = True):
     """
     Read a CSV file containing text reviews, predict their sentiments using a trained BERT-based sentiment analysis model,
     and save the predictions to a new CSV file.
@@ -208,14 +210,20 @@ def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_path =
         filename (str): The name of the CSV file to be read.
         col_name (str): The name of the column in the CSV file containing the texts to be predicted.
         model_name (str): The name of the trained model to be used for prediction.
+        use_mps (bool): If True, the model will use the MPS device for faster training.
+    
+    Returns:
+        DataFrame: Dataframe with appended predicted sentiment probabilities and labels.
     """
     current_path = os.getcwd()
     root_path = os.path.dirname(current_path)
     df = pd.read_csv(root_path + '/data/' + filename, encoding='unicode_escape')
 
-    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = model_path)
+    y_pred, y_score = pred_bert(df[col_name].to_list(), return_score = True, model_name = model_path, use_mps = True)
 
     df['predicted_sentiment_probability'] = y_score
     df['predicted_sentiment'] = y_pred
 
     df.to_csv(root_path + '/data/reviews_test_prediction_Group_9.csv')
+
+    return df
