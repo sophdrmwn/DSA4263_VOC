@@ -2,7 +2,20 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 import matplotlib.pyplot as plt
 
 def get_metrics(y_pred, y_test, results_dict, model_name, y_pred_score = None):
-    # evalution metrics
+    """
+    Calculates and returns classification metrics such as accuracy, precision, recall, f1 score, and AUC-ROC score.
+    Updates the given results_dict with the metrics for the given model_name.
+    
+    Args:
+    y_pred (list): Predicted labels for the test set
+    y_test (list): True labels for the test set
+    results_dict (dict): Dictionary to store the results of different models
+    model_name (str): Name of the model for which metrics are being calculated
+    y_pred_score (list, optional): Predicted probabilities for the test set (default is None)
+    
+    Parameters:
+    dict: Updated results_dict with the metrics for the given model_name
+    """
     acc = accuracy_score(y_test, y_pred)
     pre = precision_score(y_test, y_pred)
     recall = recall_score(y_test,y_pred)
@@ -25,7 +38,13 @@ def get_metrics(y_pred, y_test, results_dict, model_name, y_pred_score = None):
     return results_dict
 
 def model_comparison(results_dict):
-
+    """
+    Ranks models based on the metrics stored in the results_dict.
+    Prints the name of the model that performed the best among all the models and the rank of all models.
+    
+    Parameters:
+    results_dict (dict): Dictionary that contains the results of different models
+    """
     rank_dict = {}
     for metric in results_dict.keys():
         sorted_dict = sorted(results_dict[metric].items(), key=lambda x:x[1], reverse = True)
@@ -42,7 +61,13 @@ def model_comparison(results_dict):
     print(rank_dict)
 
 def plot_roc_curve(y_test, y_pred):
-
+    """
+    Plots the ROC curve for binary classification model.
+    
+    Parameters:
+    y_pred (list): Predicted labels or probabilities for the test set
+    y_test (list): True labels for the test sets:
+    """
     fpr, tpr, thresholds = roc_curve(y_test, y_pred)
     plt.plot(fpr, tpr)
     plt.xlabel('False Positive Rate')

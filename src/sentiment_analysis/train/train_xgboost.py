@@ -3,6 +3,22 @@ import xgboost
 
 
 def train_xgboost(X_train_tf, X_train_word, X_test_tf, X_test_word, y_train, y_test, metric= "accuracy"):
+    """
+    Trains an XGBoost classifier on the given training sets and returns the best model and its predictions.
+    
+    Args:
+    X_train_tf (array-like): Training set features represented as a matrix of TF-IDF scores.
+    X_train_word (array-like): Training set features represented as a matrix of word2vec embeddings.
+    X_test_tf (array-like): Test set features represented as a matrix of TF-IDF scores.
+    X_test_word (array-like): Test set features represented as a matrix of word2vec embeddings.
+    y_train (list-like): Target values for the training set.
+    y_test (list-like): Target values for the test set.
+    metric (str, optional): The scoring metric to optimize during model selection. Default is 'accuracy'.
+    
+    Returns:
+    the best XGBoost classifier, its predictions on the test set, and the predicted probabilities.
+    
+    """
     # Hyperparameters for optimization
     params = {
         "learning_rate": [0.001, 0.01, 0.1],
