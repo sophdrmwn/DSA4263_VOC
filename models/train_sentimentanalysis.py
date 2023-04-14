@@ -9,10 +9,10 @@ def train_bert(X, y, model_path = 'bert-full-train', use_mps = True):
     """
     Train a BERT-based sentiment analysis model on a given dataset.
 
-    Args:
+    Parameters:
         X (list): A list of texts.
         y (list): A list of labels corresponding to the texts in X.
-        model_name (str): The name of the model to be saved.
+        model_path (str): The path of the model to be saved at.
         use_mps (bool): If True, the model will use the MPS device for faster training.
     """
     if use_mps:

@@ -40,7 +40,7 @@ def compute_metrics(p):
     """
     Computes and returns the accuracy score for predictions.
 
-    Args:
+    Parameters:
         p (tuple): Tuple containing predicted probabilities and labels.
 
     Returns:
@@ -57,7 +57,7 @@ def ray_hp_space(trial):
     """
     Returns a dictionary containing chosen hyperparameters for hyperparameter search.
 
-    Args:
+    Parameters:
         trial: Object representing a single trial of a hyperparameter search.
 
     Returns:
@@ -72,7 +72,7 @@ def model_init(trial):
     """
     Initializes and returns a BERT model.
 
-    Args:
+    Parameters:
         trial: Object representing a single trial of a hyperparameter search.
 
     Returns:
@@ -84,7 +84,7 @@ def tune_bert(X_train, X_test, y_train, y_test, use_mps = True):
     """
     Performs hyperparameter tuning for a BERT model.
 
-    Args:
+    Parameters:
         X_train (list): List of text data for training.
         X_test (list): List of text data for testing.
         y_train (list): List of labels for training data.
@@ -137,20 +137,17 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
     """
     Predict the sentiment of given text(s) using a trained BERT-based sentiment analysis model.
 
-    Args:
-        text (str or list): A string or a list of strings.
-        model_name (str): The name of the trained model to be used for prediction.
+    Parameters:
+        text (list): A string or a list of strings.
+        model_path (str): The path of the model for prediction to be saved at.
         return_score (bool): If True, the function returns both the predicted label and the score.
         use_mps (bool): If True, the model will use the MPS device for faster training.
 
     Returns:
-        If text is a string:
-            A string representing the predicted sentiment ('Positive review' or 'Negative review').
-
-        If text is a list and return_score is True:
+        If return_score is True:
             A tuple of two lists, where the first list contains the predicted labels and the second list contains the scores.
 
-        If text is a list and return_score is False:
+        If return_score is False:
             A list of predicted labels.
     """
 
@@ -174,42 +171,31 @@ def pred_bert(text, model_path = 'bert-full-train', return_score = False, use_mp
             padding = True
         )
     
-    if isinstance(text, list):
-        y_pred = []
-        y_score = []
-        for review in text:
-            result = sentiment_analysis(review)
-            y_pred.append(int(result[0]["label"][-1:]))
-            if int(result[0]["label"][-1:]) == 1:
-                y_score.append(float(result[0]["score"]))
-            else:
-                y_score.append(1 - float(result[0]["score"]))
-
-        if return_score:
-            return y_pred, y_score
-        
+    y_pred = []
+    y_score = []
+    for review in text:
+        result = sentiment_analysis(review)
+        y_pred.append(int(result[0]["label"][-1:]))
+        if int(result[0]["label"][-1:]) == 1:
+            y_score.append(float(result[0]["score"]))
         else:
-            return y_pred
+            y_score.append(1 - float(result[0]["score"]))
 
+    if return_score:
+        return y_pred, y_score
+        
     else:
-        result = sentiment_analysis(text)
-        sentiment = int(result[0]['label'][-1:])
-
-        if sentiment == 1: 
-            return 'Positive review'
-        
-        else:
-            return 'Negative review'
+        return y_pred
 
 def pred_bert_new(filename = 'reviews_test.csv', col_name = 'Text', model_path = 'bert-full-train', use_mps = True):
     """
     Read a CSV file containing text reviews, predict their sentiments using a trained BERT-based sentiment analysis model,
     and save the predictions to a new CSV file.
 
-    Args:
+    Parameters:
         filename (str): The name of the CSV file to be read.
         col_name (str): The name of the column in the CSV file containing the texts to be predicted.
-        model_name (str): The name of the trained model to be used for prediction.
+        model_path (str): The path of the model to be saved at.
         use_mps (bool): If True, the model will use the MPS device for faster training.
     
     Returns:
