@@ -29,6 +29,11 @@ stemmer = PorterStemmer()
 current_path = os.getcwd()
 root_path = os.path.dirname(current_path)
 
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+
 # remove underscore
 def remove_underscore(text):
     return re.sub('_', ' ', text)
@@ -184,37 +189,35 @@ def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_featu
         pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pkl", "wb"))
     return df_tfidf
 
-import nltk
-from nltk.corpus import wordnet
-from nltk.stem import WordNetLemmatizer
-nltk.download('averaged_perceptron_tagger')
-nltk.download('wordnet')
 
 #lemmatization
 def get_wordnet_pos(word):
-  """Map POS tag to first character lemmatize() accepts"""
-  tag = nltk.pos_tag([word])[0][1][0].lower()
-  tag_dict = {"j": wordnet.ADJ,
-              "n": wordnet.NOUN,
-              "v": wordnet.VERB,
-              "r": wordnet.ADV}
-  return tag_dict.get(tag, wordnet.NOUN)
+    """Map POS tag to first character lemmatize() accepts"""
+    tag = nltk.pos_tag([word])[0][1][0].lower()
+    tag_dict = {"j": wordnet.ADJ,
+            "n": wordnet.NOUN,
+            "v": wordnet.VERB,
+            "r": wordnet.ADV}
+    return tag_dict.get(tag, wordnet.NOUN)
 
 def lemmatize_text(text):
-  lemmatizer = WordNetLemmatizer()
-  tokens = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(word)) for word in text.split()]
-  result = ' '.join(tokens)
-  return result
+    """Lemmatizes a given text using the WordNetLemmatizer from the NLTK library."""
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(word, pos=get_wordnet_pos(word)) for word in text.split()]
+    result = ' '.join(tokens)
+    return result
 
 #further cleaning
 def words_remove(text):
-  ls = ['one','get','use','try','much','go','amazon','even','also','give','add','say','come','order','like']
-  tokens = [word for word in text.split() if word not in ls]
-  result = ' '.join(tokens)
-  return result
+    """Further remove a list of common words from a given text."""
+    ls = ['one','get','use','try','much','go','amazon','even','also','give','add','say','come','order','like']
+    tokens = [word for word in text.split() if word not in ls]
+    result = ' '.join(tokens)
+    return result
 
 #select certain types of words like nouns, adjectives...
 def select_pos_tag(df, pt=['j','n','v','r']):
-  col = df.columns.values.tolist()
-  new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
-  return df.loc[:,new_col]
+    """Select columns from a DataFrame based on their part-of-speech (POS) tag using the NLTK library."""
+    col = df.columns.values.tolist()
+    new_col = filter(lambda c: nltk.pos_tag([c])[0][1][0].lower() in pt, col)
+    return df.loc[:,new_col]
