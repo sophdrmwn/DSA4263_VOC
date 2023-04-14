@@ -52,9 +52,13 @@ docker run -p 4000:5000 vocapp:v3
 ```
 Open this URL in a browser `http://localhost:4000/apidocs` 
 
-Click on `Try it out` and enter a text into reviews and press `Execute`. 
+Click on `Try it out` and enter a text into review and press `Execute`. 
 
 The predicted sentiment, topic and predicted sentiment probabilty will be output in the `Response body` section. 
+
+An example of how the webpage looks like is below:
+![VoC App](https://user-images.githubusercontent.com/52200957/231997804-09add62d-6149-4505-bde3-aa36b6ffdf75.jpg)
+
 
 To close the docker container, follow the steps below:
   1. Open a new command prompt and run the following command:
