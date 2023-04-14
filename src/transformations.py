@@ -89,6 +89,21 @@ def get_cleantext(text, stemming=False):
 # Feature engineering
 # 1) TF_IDF
 def tf_idf(X, vectorizer = None):
+    """
+    Transform the input text data using the TF-IDF algorithm.
+    
+    Parameters:
+    X : list
+        A list of text data to be transformed using TF-IDF.
+    vectorizer : TfidfVectorizer, optional
+        A trained TfidfVectorizer instance. If not provided, a new instance will be created and fit on the input data.
+
+    Returns:
+    X : ndarray
+        The transformed input data, represented as a matrix of shape (n_samples, n_features) using TF-IDF.
+    vectorizer : TfidfVectorizer
+        The trained TfidfVectorizer instance used to transform the input data.
+    """
     X = list(map(lambda x: get_cleantext(x),X))
     if not vectorizer:
         # Create an instance of the TfidfVectorizer class, can modify its parameters such as ngram
@@ -126,6 +141,19 @@ def get_mean_vector(text, wv):
             return wv_res
         
 def word2vec(X, wv_name = 'word2vec-google-news-300'):
+    """
+    Transform the input text data using the Word2Vec algorithm.
+
+    Parameters:
+    X : list
+        A list of text data to be transformed using Word2Vec.
+    wv_name : str, optional
+        The name of the pre-trained Word2Vec model to be used. Default is 'word2vec-google-news-300'.
+
+    Returns:
+    X : ndarray
+        The transformed input data, represented as a matrix of shape (n_samples, n_features) using Word2Vec.
+    """
     # use pre-trained word2vec model
     wv = api.load(wv_name)
     
@@ -153,7 +181,7 @@ def new_tfidf(X, save=False, ngram_range=(1, 1), max_df=1.0, min_df=1, max_featu
     df_tfidf = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out())
     # save tfidf vectorizer if needed
     if save:
-        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pickle", "wb"))
+        pickle.dump(vectorizer, open(root_path+"/models/tfidfvectorizer.pkl", "wb"))
     return df_tfidf
 
 import nltk

@@ -5,6 +5,16 @@ import scipy
 from scipy import stats
 
 def train_textblob(data):
+
+    """
+    Predict the sentiment of given text(s) using Textblob.
+
+    Args:
+        data: a list of texts
+
+    Returns:
+        A list of 0s and 1s, where 0 represents negative sentiment and 1 represents positive sentiment. 
+    """
     
     TextBlob_sentiment = []
 

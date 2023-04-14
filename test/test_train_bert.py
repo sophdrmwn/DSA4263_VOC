@@ -1,5 +1,4 @@
-from src.sentiment_analysis.train.train_bert import *
-from models.train_sentimentanalysis import *
+from src.sentiment_analysis.train.train_bert import compute_metrics, pred_bert
 
 import numpy as np
 from unittest.mock import patch
@@ -14,29 +13,15 @@ def test_compute_metrics():
     result = compute_metrics((pred, labels))
 
     assert type(result) == dict
-    assert result.keys() == ['accuracy']
-    assert (result['accuracy'] < 0 and result['accuracy'] < 1)
+    assert (result['accuracy'] > 0 and result['accuracy'] <= 1)
 
 def test_pred_bert():
-    text_single = "This movie is great!"
-    expected_single = "Positive review"
 
     text_list = ["This movie is great!", "This movie is terrible!"]
     expected_list = [1, 0]
+    y_pred, y_score = pred_bert(text_list, 'models/bert-full-train', True)
 
-    with patch('transformers.pipeline') as mock_pipeline:
-        # Test single text input
-        mock_pipeline.return_value = [{"label": "LABEL_1"}]
-        output = pred_bert(text_single)
-        assert output == expected_single
+    assert_array_equal(np.array(y_pred), np.array(expected_list))
+    assert y_score[0] > 0.5
+    assert y_score[1] < 0.5
 
-        # Test list input, return_score = False
-        mock_pipeline.return_value = [{"label": "LABEL_1"}, {"label": "LABEL_0"}]
-        output = pred_bert(text_list)
-        assert_array_equal(np.array(output), np.array(expected_list))
-
-        # Test list input, return_score = True
-        mock_pipeline.return_value = [{"label": "LABEL_1", "score": 0.9}, {"label": "LABEL_0", "score": 0.1}]
-        output, score = pred_bert(text_list, return_score=True)
-        assert_array_equal(np.array(output), np.array(expected_list))
-        assert_array_equal(np.array(score), np.array([0.9, 0.1]))

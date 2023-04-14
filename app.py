@@ -11,8 +11,8 @@ import src.transformations as c
 
 # load vectorizer and models
 current_path = os.getcwd()
-vectorizer = pickle.load(open(current_path+"/models/tfidfvectorizer.pickle", "rb"))
-nmf_model = pickle.load(open(current_path+"/models/nmf_model.pickle", "rb"))
+vectorizer = pickle.load(open(current_path+"/models/tfidfvectorizer.pkl", "rb"))
+nmf_model = pickle.load(open(current_path+"/models/nmf_model.pkl", "rb"))
 
 sentiment_analysis = pipeline(
   'sentiment-analysis', 

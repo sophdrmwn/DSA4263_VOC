@@ -32,8 +32,8 @@ def predict_topic(review):
     Returns:
         topic (str): The predicted topic of the review.
     """
-    vectorizer = pickle.load(open(root_path+"/models/tfidfvectorizer.pickle", "rb"))
-    nmf_model = pickle.load(open(root_path+"/models/nmf_model.pickle", "rb"))
+    vectorizer = pickle.load(open(root_path+"/models/tfidfvectorizer.pkl", "rb"))
+    nmf_model = pickle.load(open(root_path+"/models/nmf_model.pkl", "rb"))
 
     clean_review = c.get_cleantext(review, stemming=True)
     tfidf_review = vectorizer.transform([clean_review])
