@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import sys
-# sys.path.insert(0, '../src')
+sys.path.insert(0, '../src')
 
-from LSA import *
+from topic_modelling.train.train_lsa import *
 
 test_df = pd.DataFrame({'away': [0, 0, 1, 0, 0],
                 'bitter': [0, 1, 0, 0, 0],
